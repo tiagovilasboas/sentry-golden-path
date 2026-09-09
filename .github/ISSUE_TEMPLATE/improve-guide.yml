@@ -15,6 +15,7 @@ body:
       label: Area
       options:
         - golden-path
+        - observability map
         - sampling / Web Vitals
         - PII and filters
         - domain tags / dedup

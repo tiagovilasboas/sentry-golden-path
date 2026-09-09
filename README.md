@@ -18,6 +18,7 @@ npm test
 | Doc | Use when |
 | --- | --- |
 | [docs/golden-path.md](docs/golden-path.md) | Why Sentry vs metrics backends; create project → SDK → env → **production-only init**; source maps; 15-minute checklist |
+| [docs/observability-map.md](docs/observability-map.md) | Staff vocabulary: pillars, Golden Signals, RED/USE, SLI/SLO, error budget, tracing, correlation — where Sentry fits |
 | [docs/sampling.md](docs/sampling.md) | Conservative defaults (`sampleRate` ≤ 0.1, `tracesSampleRate` ≤ 0.05, replay on error only); Web Vitals (LCP / INP / CLS); how to raise later |
 | [docs/pii-and-filters.md](docs/pii-and-filters.md) | `beforeSend` masking, `ignoreErrors` / `denyUrls`, GDPR/LGPD-minded defaults |
 | [docs/domain-tags.md](docs/domain-tags.md) | `domain` + `flow` tags with context; short-window dedup against cascade spam |
@@ -27,7 +28,7 @@ Official refs (not dependencies): [Sentry for React](https://docs.sentry.io/plat
 ## Layout
 
 ```text
-docs/                 golden path, sampling, PII, domain tags
+docs/                 golden path, observability map, sampling, PII, domain tags
 examples/             typed init patterns (placeholders only)
 adapters/cursor/      optional Cursor rule; AGENTS.md stays source of truth
 .github/              PR / issue templates + CI

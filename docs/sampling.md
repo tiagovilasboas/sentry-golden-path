@@ -39,7 +39,7 @@ Add `Sentry.browserTracingIntegration()` (React Router / Vue Router variants if 
 | **INP** | Interaction to Next Paint — how long the UI takes to react | Frozen click handlers, main-thread long tasks |
 | **CLS** | Cumulative Layout Shift — visual instability | Late fonts, ads, images without size |
 
-You are **not** replacing a RUM warehouse. You are attaching sparse vitals to the same release and route as the errors. Keep `tracesSampleRate` ≤ 0.05 so Insights stay cheap.
+You are **not** replacing a RUM warehouse. You are attaching sparse vitals to the same release and route as the errors — Golden Signals **Latency** / RED **Duration**, not Traffic/Rate. Keep `tracesSampleRate` ≤ 0.05 so Insights stay cheap. Map: [observability-map.md](observability-map.md).
 
 Optional on the integration (defaults are already on in current SDKs): `enableInp: true`, `enableLongTask: true`. Do not also set `interactionsSampleRate: 1` on top of a high `tracesSampleRate`.
 

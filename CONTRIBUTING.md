@@ -6,7 +6,7 @@ Read [AGENTS.md](AGENTS.md) before editing. Open a pull request against `main` â
 
 ## What belongs here
 
-- Generic best practice: SDK init, sampling, Web Vitals, source maps, tags, PII filters, short-window dedup.
+- Generic best practice: SDK init, sampling, Web Vitals, source maps, tags, PII filters, short-window dedup, Staff observability vocabulary mapped to Sentry.
 - Placeholders only: `YOUR_ORG`, `your-app`, `https://oXXXX.ingest.sentry.io/...`.
 - English for README, docs, templates, PR bodies, and commands in fences.
 

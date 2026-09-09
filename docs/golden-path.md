@@ -1,6 +1,6 @@
 # Golden path
 
-Sentry is for **user-journey failures**: an unhandled exception on checkout, a white screen after navigation, a broken interaction that the browser actually threw. Metrics backends (Prometheus, CloudWatch, OpenTelemetry metrics) answer **server health**: saturation, error *rate* on a scrape, p99 of a handler. You need both. Sentry does not replace RED/USE dashboards; dashboards do not give you the release, the stack, the replay-on-error, or the `domain`/`flow` of the click that broke.
+Sentry is for **user-journey failures**: an unhandled exception on checkout, a white screen after navigation, a broken interaction that the browser actually threw. Metrics backends (Prometheus, CloudWatch, OpenTelemetry metrics) answer **server health**: saturation, error *rate* on a scrape, p99 of a handler. You need both. Sentry does not replace RED/USE dashboards; dashboards do not give you the release, the stack, the replay-on-error, or the `domain`/`flow` of the click that broke. Vocabulary (Golden Signals, SLI/SLO, error budget, correlation): [observability-map.md](observability-map.md).
 
 This guide is conservative on purpose. Wizard samples often ship `tracesSampleRate: 1.0` and session replay at 10%. That is a demo, not a production default. Start low; raise with a budget. See [sampling.md](sampling.md).
 

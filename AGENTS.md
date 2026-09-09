@@ -5,13 +5,14 @@ Thin map for coding agents. Humans: [CONTRIBUTING.md](CONTRIBUTING.md). This rep
 ## Layout
 
 ```text
-docs/golden-path.md      setup spine (project → SDK → prod-only init)
-docs/sampling.md         conservative rates + Web Vitals
-docs/pii-and-filters.md  beforeSend, ignoreErrors, denyUrls
-docs/domain-tags.md      domain/flow tags + short-window dedup
-examples/react-init.ts   React SPA (placeholders only)
-examples/vue-nuxt-init.ts Vue 3 / Nuxt client (placeholders only)
-adapters/cursor/         optional Cursor rule; AGENTS.md stays SoT
+docs/golden-path.md         setup spine (project → SDK → prod-only init)
+docs/observability-map.md   Staff vocab: pillars, Golden Signals, RED/USE, SLOs
+docs/sampling.md            conservative rates + Web Vitals
+docs/pii-and-filters.md     beforeSend, ignoreErrors, denyUrls
+docs/domain-tags.md         domain/flow tags + short-window dedup
+examples/react-init.ts      React SPA (placeholders only)
+examples/vue-nuxt-init.ts   Vue 3 / Nuxt client (placeholders only)
+adapters/cursor/            optional Cursor rule; AGENTS.md stays SoT
 ```
 
 ## Do
