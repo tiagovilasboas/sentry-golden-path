@@ -1,0 +1,6 @@
+---
+description: Sentry golden-path constraints (thin Cursor pointer).
+alwaysApply: false
+---
+
+Follow `AGENTS.md` in this kit. Conservative rates, production-only init, placeholders only (`YOUR_ORG`, `your-app`, `https://oXXXX.ingest.sentry.io/...`). Do not invent DSNs or raise sample rates without a budget.
