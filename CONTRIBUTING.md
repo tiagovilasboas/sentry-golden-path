@@ -6,7 +6,7 @@ Read [AGENTS.md](AGENTS.md) before editing. Open a pull request against `main` â
 
 ## What belongs here
 
-- Generic best practice: SDK init, sampling, Web Vitals, source maps, tags, PII filters, short-window dedup, Staff observability vocabulary mapped to Sentry.
+- Generic best practice: SDK init, sampling, Web Vitals, source maps, tags, PII filters, short-window dedup, Staff observability vocabulary mapped to Sentry, manual `gen_ai.*` agent/LLM spans (no prompt capture by default).
 - Placeholders only: `YOUR_ORG`, `your-app`, `https://oXXXX.ingest.sentry.io/...`.
 - English for README, docs, templates, PR bodies, and commands in fences.
 
@@ -29,7 +29,7 @@ npm ci
 npm test
 ```
 
-`npm test` typechecks `examples/` and runs `scripts/check.mjs` (AGENTS.md length, forbidden strings, placeholder DSN shape).
+`npm test` typechecks `examples/` (including `agent-span.example.ts`) and runs `scripts/check.mjs` (AGENTS.md length, forbidden strings, placeholder DSN shape, `llms.txt` pointers, agent-span invariants).
 
 ## Pull requests
 

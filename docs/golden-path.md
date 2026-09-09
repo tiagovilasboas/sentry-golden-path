@@ -111,9 +111,9 @@ export default {
 
 ## 6. Optional: AI / LLM monitoring
 
-If the app calls a model **on the server**, Sentry can attach `gen_ai.*` spans on top of tracing (token usage, agent runs, tool calls). That is a **backend** concern: browser SDKs do not patch OpenAI for you, and prompts are PII-heavy. Do not turn on input/output capture in the client as a shortcut.
+If the app calls a model **on the server**, attach `gen_ai.*` spans there (token usage, agent runs, tool calls). Browser SDKs do not patch OpenAI. Prompts are PII. Do not raise the SPA `tracesSampleRate` to `1.0` to “see AI.”
 
-Conceptual product surface: [Sentry AI / Insights](https://docs.sentry.io/product/insights/ai/). Keep `tracesSampleRate` low; AI spans inherit tracing. This repo does not claim a private product integration.
+Full notes (span tree, prompt policy, token/cost breadcrumbs, failure modes, `tracesSampler`): [ai-llm-monitoring.md](ai-llm-monitoring.md). Copy [examples/agent-span.example.ts](../examples/agent-span.example.ts). Product surface: [Sentry AI / Insights](https://docs.sentry.io/product/insights/ai/).
 
 ## New repo Sentry ready in 15 minutes
 

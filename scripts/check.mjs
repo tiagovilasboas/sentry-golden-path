@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Repo hygiene: AGENTS.md length, README shape, no firm IP, placeholder DSNs only.
+ * Repo hygiene: AGENTS.md length, README shape, no firm IP, placeholder DSNs only,
+ * llms.txt pointers, and agent-span example invariants.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -43,6 +44,12 @@ if (!/^# Sentry Golden Path/m.test(readme)) {
 if (!/## Start/.test(readme) || !/## Contents/.test(readme) || !/## Layout/.test(readme)) {
   errors.push("README.md must include Start, Contents, and Layout.");
 }
+if (!/docs\/ai-llm-monitoring\.md/.test(readme)) {
+  errors.push("README.md must link docs/ai-llm-monitoring.md.");
+}
+if (/—/.test(readme)) {
+  errors.push("README.md must not use an em dash.");
+}
 
 const forbidden = [
   /\bCogna\b/i,
@@ -53,7 +60,7 @@ const forbidden = [
 ];
 
 const textFiles = walk(root).filter((path) =>
-  /\.(md|ts|mjs|yml|yaml|json|mdc)$/.test(path) && !path.endsWith("package-lock.json"),
+  /\.(md|ts|mjs|yml|yaml|json|mdc|txt)$/.test(path) && !path.endsWith("package-lock.json"),
 );
 
 for (const file of textFiles) {
@@ -71,6 +78,44 @@ for (const file of textFiles) {
   if (dsnHits.length > 0) {
     errors.push(`${rel}: numeric Sentry ingest host (use oXXXX placeholder): ${dsnHits.join(", ")}`);
   }
+}
+
+const observability = read(join(root, "docs/observability-map.md"));
+if (!/ai-llm-monitoring\.md/.test(observability)) {
+  errors.push("docs/observability-map.md must link ai-llm-monitoring.md.");
+}
+
+const llmsTxt = read(join(root, "llms.txt"));
+for (const needle of [
+  "docs/golden-path.md",
+  "docs/observability-map.md",
+  "docs/ai-llm-monitoring.md",
+  "examples/agent-span.example.ts",
+]) {
+  if (!llmsTxt.includes(needle)) {
+    errors.push(`llms.txt must point at ${needle}.`);
+  }
+}
+
+const agentExamplePath = "examples/agent-span.example.ts";
+const agentExample = read(join(root, agentExamplePath));
+if (!/AGENT_SPAN_OPS/.test(agentExample)) {
+  errors.push(`${agentExamplePath}: AGENT_SPAN_OPS missing.`);
+}
+if (!/gen_ai\.invoke_agent/.test(agentExample) || !/gen_ai\.chat/.test(agentExample)) {
+  errors.push(`${agentExamplePath}: gen_ai.invoke_agent / gen_ai.chat ops missing.`);
+}
+if (!/CAPTURE_PROMPTS = false/.test(agentExample)) {
+  errors.push(`${agentExamplePath}: prompts must default to not captured.`);
+}
+if (!/addBreadcrumb/.test(agentExample) || !/recordTokenBreadcrumb/.test(agentExample)) {
+  errors.push(`${agentExamplePath}: token/cost breadcrumb helper missing.`);
+}
+if (/tracesSampleRate:\s*1/.test(agentExample)) {
+  errors.push(`${agentExamplePath}: do not ship tracesSampleRate 1.0 as a default.`);
+}
+if (/setAttribute\(\s*["']gen_ai\.(?:input|output)\.messages["']/.test(agentExample)) {
+  errors.push(`${agentExamplePath}: do not attach prompt/completion message attributes.`);
 }
 
 const rates = {

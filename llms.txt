@@ -1,0 +1,27 @@
+# Sentry Golden Path
+
+> Conservative, production-safe Sentry for front-end apps. Copy-paste guide, not a hosted DSN. Placeholders only: YOUR_ORG, your-app, https://oXXXX.ingest.sentry.io/...
+
+## Docs
+
+- [docs/golden-path.md](docs/golden-path.md): Project, SDK, env, production-only init, source maps, 15-minute checklist
+- [docs/observability-map.md](docs/observability-map.md): Pillars, Golden Signals, RED/USE, SLI/SLO, error budget, tracing, correlation
+- [docs/sampling.md](docs/sampling.md): sampleRate 0.1, tracesSampleRate 0.05, replay on error only, Web Vitals
+- [docs/pii-and-filters.md](docs/pii-and-filters.md): beforeSend masks, ignoreErrors, denyUrls, GDPR/LGPD
+- [docs/domain-tags.md](docs/domain-tags.md): domain + flow tags, short-window dedup
+- [docs/ai-llm-monitoring.md](docs/ai-llm-monitoring.md): gen_ai spans, prompts as PII, token/cost breadcrumbs, failure modes, sampling
+
+## Examples
+
+- [examples/react-init.ts](examples/react-init.ts): React SPA init (placeholders)
+- [examples/vue-nuxt-init.ts](examples/vue-nuxt-init.ts): Vue 3 / Nuxt client init (placeholders)
+- [examples/agent-span.example.ts](examples/agent-span.example.ts): Manual agent/LLM spans (no prompt capture)
+
+## Agent notes
+
+- [AGENTS.md](AGENTS.md): Constraints for coding agents (source of truth, max 80 lines)
+- [CONTRIBUTING.md](CONTRIBUTING.md): What belongs in this kit
+
+## Optional
+
+- [adapters/cursor/sentry-golden-path.mdc](adapters/cursor/sentry-golden-path.mdc): Thin Cursor pointer; AGENTS.md stays SoT

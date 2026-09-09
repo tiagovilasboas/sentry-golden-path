@@ -78,5 +78,6 @@ Dashboards, alerts, SLOs, and this SDK init should live in **git** (`YOUR_ORG` /
 | USE / Saturation | Not Sentry — infra metrics |
 | Error budget | Product of your SLO, not a Sentry toggle; correct for sampling |
 | Correlation | Same `release` in `Sentry.init` and logs; `trace_id` when the request was sampled |
+| LLM / agent traces | `gen_ai.*` spans on the **server** that calls the model; prompts are PII. See [ai-llm-monitoring.md](ai-llm-monitoring.md) |
 
-Init: [examples/react-init.ts](../examples/react-init.ts). Checklist: [golden-path.md](golden-path.md#new-repo-sentry-ready-in-15-minutes).
+Init: [examples/react-init.ts](../examples/react-init.ts). Agent spans: [examples/agent-span.example.ts](../examples/agent-span.example.ts). Checklist: [golden-path.md](golden-path.md#new-repo-sentry-ready-in-15-minutes).
