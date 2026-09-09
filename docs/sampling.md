@@ -62,3 +62,5 @@ tracesSampler(samplingContext) {
 ```
 
 Still cap the default at 0.05. A sampler that returns `1` on every navigation is `tracesSampleRate: 1.0` with extra steps.
+
+LLM / agent spans inherit the **root** decision. Keep the SPA at 0.05; raise only the server route or `gen_ai.*` root that calls the model. Token breadcrumbs stay at 100%. Details: [ai-llm-monitoring.md](ai-llm-monitoring.md).

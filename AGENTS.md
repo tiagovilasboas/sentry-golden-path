@@ -5,14 +5,17 @@ Thin map for coding agents. Humans: [CONTRIBUTING.md](CONTRIBUTING.md). This rep
 ## Layout
 
 ```text
-docs/golden-path.md         setup spine (project → SDK → prod-only init)
-docs/observability-map.md   Staff vocab: pillars, Golden Signals, RED/USE, SLOs
-docs/sampling.md            conservative rates + Web Vitals
-docs/pii-and-filters.md     beforeSend, ignoreErrors, denyUrls
-docs/domain-tags.md         domain/flow tags + short-window dedup
-examples/react-init.ts      React SPA (placeholders only)
-examples/vue-nuxt-init.ts   Vue 3 / Nuxt client (placeholders only)
-adapters/cursor/            optional Cursor rule; AGENTS.md stays SoT
+docs/golden-path.md           setup spine (project → SDK → prod-only init)
+docs/observability-map.md     Staff vocab: pillars, Golden Signals, RED/USE, SLOs
+docs/sampling.md              conservative rates + Web Vitals
+docs/pii-and-filters.md       beforeSend, ignoreErrors, denyUrls
+docs/domain-tags.md           domain/flow tags + short-window dedup
+docs/ai-llm-monitoring.md     gen_ai spans, prompts as PII, token/cost, sampling
+examples/react-init.ts        React SPA (placeholders only)
+examples/vue-nuxt-init.ts     Vue 3 / Nuxt client (placeholders only)
+examples/agent-span.example.ts  manual agent/LLM spans (no prompt capture)
+llms.txt                      RAG pointer for coding agents
+adapters/cursor/              optional Cursor rule; AGENTS.md stays SoT
 ```
 
 ## Do
@@ -31,4 +34,5 @@ adapters/cursor/            optional Cursor rule; AGENTS.md stays SoT
 - Do not enable Sentry in local/dev by default (noise + quota).
 - Do not ship `tracesSampleRate: 1.0` or session replay > 0 without a written budget.
 - Do not paste firm-internal runbooks, Confluence, or Azure variable-group names here.
+- Do not attach LLM prompts or completions on `gen_ai` spans (`CAPTURE_PROMPTS = false`).
 - Do not commit to `main`; open a PR.
