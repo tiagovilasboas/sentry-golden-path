@@ -1,0 +1,43 @@
+name: Improve guide
+description: Propose a docs or example change to the Sentry golden path.
+title: "guide: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Keep this generic. No real DSNs, org slugs, or internal hostnames.
+        Conservative defaults: errors ≤ 0.1, traces ≤ 0.05, session replay 0.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - golden-path
+        - observability map
+        - sampling / Web Vitals
+        - PII and filters
+        - domain tags / dedup
+        - examples
+        - CI / agents
+    validations:
+      required: true
+
+  - type: textarea
+    id: change
+    attributes:
+      label: What should change?
+      description: The copy-paste pattern or default you want to add or fix.
+    validations:
+      required: true
+
+  - type: textarea
+    id: verify
+    attributes:
+      label: How to verify
+      value: |
+        npm ci
+        npm test
+    validations:
+      required: true
