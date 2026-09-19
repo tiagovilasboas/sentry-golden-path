@@ -19,6 +19,7 @@ import {
   collectPiiDocErrors,
   collectReadmeShapeErrors,
   collectReadmeStandaloneErrors,
+  collectSamplingCapErrors,
   collectSamplingDocErrors,
   collectSiblingFarmErrors,
   lineCountWithoutTrailingNl,
@@ -59,7 +60,11 @@ const textFiles = walk(root).filter((path) =>
 
 for (const file of textFiles) {
   const rel = relative(root, file);
-  const skipPolicy = rel === "scripts/check.mjs" || rel.startsWith("scripts/lib/") || rel.endsWith(".test.mjs");
+  const skipPolicy =
+    rel === "scripts/check.mjs" ||
+    rel.startsWith("scripts/lib/") ||
+    rel.startsWith("scripts/fixtures/") ||
+    rel.endsWith(".test.mjs");
   const body = read(file);
   if (!skipPolicy) {
     errors.push(...collectFirmIpErrors(rel, body));
@@ -84,6 +89,18 @@ for (const rel of initFiles) {
   const body = read(join(root, rel));
   errors.push(...collectInitExampleErrors(rel, body));
   errors.push(...collectGuardBehaviorErrors(rel, body));
+}
+
+const samplingOverCapRel = "scripts/fixtures/sampling-over-cap.ts";
+try {
+  const samplingOverCap = read(join(root, samplingOverCapRel));
+  const samplingOverCapErrors = collectSamplingCapErrors(samplingOverCapRel, samplingOverCap);
+  if (!samplingOverCapErrors.some((line) => /tracesSampleRate=1/.test(line))) {
+    errors.push(`${samplingOverCapRel}: expected tracesSampleRate>cap FAIL is missing.`);
+  }
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  errors.push(`${samplingOverCapRel}: anti-fixture missing (${message}).`);
 }
 
 if (errors.length > 0) {

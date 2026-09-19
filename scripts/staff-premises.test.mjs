@@ -7,6 +7,7 @@ import {
   collectInitExampleErrors,
   collectReadmeShapeErrors,
   collectReadmeStandaloneErrors,
+  collectSamplingCapErrors,
   collectSiblingFarmErrors,
   extractExampleGuards,
   findNumericAssignments,
@@ -56,6 +57,12 @@ describe("a broken Staff premise fails", () => {
   it("fails when tracesSampleRate is shipped at 1.0", () => {
     const broken = reactInit.replace("tracesSampleRate: TRACES_SAMPLE_RATE", "tracesSampleRate: 1.0");
     const errors = collectInitExampleErrors("examples/react-init.ts", broken);
+    assert.ok(errors.some((line) => /tracesSampleRate=1/.test(line)));
+  });
+
+  it("the sampling-over-cap fixture is expected FAIL", () => {
+    const fixture = readFileSync(new URL("./fixtures/sampling-over-cap.ts", import.meta.url), "utf8");
+    const errors = collectSamplingCapErrors("scripts/fixtures/sampling-over-cap.ts", fixture);
     assert.ok(errors.some((line) => /tracesSampleRate=1/.test(line)));
   });
 

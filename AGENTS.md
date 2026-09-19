@@ -15,6 +15,7 @@ examples/react-init.ts        React SPA (placeholders only)
 examples/vue-nuxt-init.ts     Vue 3 / Nuxt client (placeholders only)
 examples/agent-span.example.ts  manual agent/LLM spans (no prompt capture)
 scripts/check.mjs             Staff premises: rates, PII, domain tags (`npm test`)
+scripts/fixtures/             anti-fixtures; sampling-over-cap.ts is expected FAIL
 llms.txt                      RAG pointer for coding agents
 adapters/cursor/              optional Cursor rule; AGENTS.md stays SoT
 ```

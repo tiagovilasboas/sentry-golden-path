@@ -332,6 +332,29 @@ function collectRateCapErrors(rel, source, cap, names) {
 }
 
 /**
+ * Rate-cap scan used on copy-paste inits and on the sampling-over-cap anti-fixture.
+ * @param {string} rel
+ * @param {string} source
+ * @returns {string[]}
+ */
+export function collectSamplingCapErrors(rel, source) {
+  return [
+    ...collectRateCapErrors(rel, source, { max: ERROR_SAMPLE_CAP, label: "sampleRate" }, [
+      "ERROR_SAMPLE_RATE",
+      "sampleRate",
+    ]),
+    ...collectRateCapErrors(rel, source, { max: TRACES_SAMPLE_CAP, label: "tracesSampleRate" }, [
+      "TRACES_SAMPLE_RATE",
+      "tracesSampleRate",
+    ]),
+    ...collectRateCapErrors(rel, source, { max: REPLAY_SESSION_CAP, label: "replaysSessionSampleRate" }, [
+      "REPLAY_SESSION_SAMPLE_RATE",
+      "replaysSessionSampleRate",
+    ]),
+  ];
+}
+
+/**
  * Copy-paste SPA inits must keep the Staff defaults the docs claim.
  * @param {string} rel
  * @param {string} source
@@ -350,24 +373,7 @@ export function collectInitExampleErrors(rel, source) {
     errors.push(`${rel}: replay-on-error must default to 1.`);
   }
 
-  errors.push(
-    ...collectRateCapErrors(rel, source, { max: ERROR_SAMPLE_CAP, label: "sampleRate" }, [
-      "ERROR_SAMPLE_RATE",
-      "sampleRate",
-    ]),
-  );
-  errors.push(
-    ...collectRateCapErrors(rel, source, { max: TRACES_SAMPLE_CAP, label: "tracesSampleRate" }, [
-      "TRACES_SAMPLE_RATE",
-      "tracesSampleRate",
-    ]),
-  );
-  errors.push(
-    ...collectRateCapErrors(rel, source, { max: REPLAY_SESSION_CAP, label: "replaysSessionSampleRate" }, [
-      "REPLAY_SESSION_SAMPLE_RATE",
-      "replaysSessionSampleRate",
-    ]),
-  );
+  errors.push(...collectSamplingCapErrors(rel, source));
 
   const required = [
     [/export function beforeSend\b/, "beforeSend helper missing"],
