@@ -57,16 +57,16 @@ const DEDUP_WINDOW_MS = 10_000;
 const recentErrors = new Map<string, number>();
 
 const CARD_PATTERN = /\b(?:\d[ -]*?){13,19}\b/g;
-const DOCUMENT_PATTERN = /\b\d{3}[.\s-]?\d{3}[.\s-]?\d{3}[.\s-]?\d{2}\b/g;
-const PHONE_PATTERN = /\+?\d[\d\s().-]{8,16}\d/g;
+const DOCUMENT_PATTERN = /\b\d{3}[.\s-]\d{3}[.\s-]?\d{3}[.\s-]?\d{2}\b/g;
+const PHONE_PATTERN = /\+\d[\d\s().-]{8,16}\d/g;
 const EMAIL_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 
 export function maskPii(value: string): string {
   return value
-    .replace(CARD_PATTERN, "[FILTERED_CARD]")
-    .replace(DOCUMENT_PATTERN, "[FILTERED_DOCUMENT]")
+    .replace(EMAIL_PATTERN, "[FILTERED_EMAIL]")
     .replace(PHONE_PATTERN, "[FILTERED_PHONE]")
-    .replace(EMAIL_PATTERN, "[FILTERED_EMAIL]");
+    .replace(DOCUMENT_PATTERN, "[FILTERED_DOCUMENT]")
+    .replace(CARD_PATTERN, "[FILTERED_CARD]");
 }
 
 export function shouldDropDuplicate(fingerprint: string, now = Date.now()): boolean {
