@@ -2,7 +2,7 @@
   "name": "sentry-golden-path",
   "version": "1.0.0",
   "private": true,
-  "description": "Staff-grade Sentry golden path — conservative sampling, Web Vitals, production-safe defaults.",
+  "description": "Staff-grade Sentry golden path: conservative sampling, Web Vitals, production-safe defaults.",
   "license": "MIT",
   "engines": {
     "node": ">=20"
@@ -10,7 +10,7 @@
   "scripts": {
     "check": "node scripts/check.mjs",
     "typecheck": "tsc --noEmit -p examples/tsconfig.json",
-    "test": "node scripts/check.mjs && tsc --noEmit -p examples/tsconfig.json"
+    "test": "node scripts/check.mjs && node --test scripts/staff-premises.test.mjs && tsc --noEmit -p examples/tsconfig.json"
   },
   "devDependencies": {
     "@sentry/react": "^10.32.1",
