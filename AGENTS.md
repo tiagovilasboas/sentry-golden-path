@@ -29,6 +29,7 @@ adapters/cursor/              optional Cursor rule; AGENTS.md stays SoT
 - Match `release` in `Sentry.init` to the source-map upload `release.name`. Match `SENTRY_PROJECT` to the **Sentry project slug**, not the git repo name.
 - Use placeholders: `YOUR_ORG`, `your-app`, `https://oXXXX.ingest.sentry.io/...`.
 - Keep `npm test` failing when Staff premises drift (rates, PII, domain tags).
+- Cite official Sentry / SRE / web.dev pages in docs. Do not invent rates.
 
 ## Don't
 

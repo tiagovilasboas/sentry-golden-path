@@ -5,9 +5,9 @@
 ## Docs
 
 - [docs/golden-path.md](docs/golden-path.md): Project, SDK, env, production-only init, source maps, 15-minute checklist
-- [docs/observability-map.md](docs/observability-map.md): Pillars, Golden Signals, RED/USE, SLI/SLO, error budget, tracing, correlation
-- [docs/sampling.md](docs/sampling.md): sampleRate 0.1, tracesSampleRate 0.05, replay on error only, Web Vitals
-- [docs/pii-and-filters.md](docs/pii-and-filters.md): beforeSend masks, ignoreErrors, denyUrls, GDPR/LGPD
+- [docs/observability-map.md](docs/observability-map.md): Golden Signals, front-end SLIs, error budget as release policy
+- [docs/sampling.md](docs/sampling.md): sampleRate vs tracesSampleRate vs tracesSampler + inheritOrSampleWith; field Web Vitals
+- [docs/pii-and-filters.md](docs/pii-and-filters.md): beforeSend* on-device, no PII breadcrumbs, dataCollection opt-outs
 - [docs/domain-tags.md](docs/domain-tags.md): domain + flow tags, short-window dedup
 - [docs/ai-llm-monitoring.md](docs/ai-llm-monitoring.md): gen_ai spans, prompts as PII, token/cost breadcrumbs, failure modes, sampling
 
