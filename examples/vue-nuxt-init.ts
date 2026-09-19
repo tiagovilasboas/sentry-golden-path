@@ -4,6 +4,15 @@
  *
  * Vue 3 SPA: call `initSentry({ app, router })` in `main.ts` before `app.mount`.
  * Nuxt: put the same `Sentry.init` options in `sentry.client.config.ts` via `@sentry/nuxt`.
+ *
+ * Staff dials (docs/sampling.md): sampleRate is errors (SDK default 1; kit starts
+ * at 0.1). tracesSampleRate is uniform traces (blog production example 0.05).
+ * Wizard 1.0 is a demo. Prefer tracesSampler + inheritOrSampleWith when the API
+ * is instrumented. Replay: session 0, on-error 1.
+ *
+ * PII: beforeSend scrubs on-device. Do not log PII into breadcrumbs.
+ * sendDefaultPii is deprecated; dataCollection must opt out explicitly.
+ *
  * Official API: https://docs.sentry.io/platforms/javascript/guides/vue/
  */
 
@@ -87,6 +96,7 @@ function fingerprintEvent(event: ErrorEvent): string {
   return `${domain}|${flow}|${type}|${message}`;
 }
 
+/** Scrub on-device so PII never leaves the browser. Do not also console.log the raw string. */
 export function beforeSend(event: ErrorEvent, _hint: EventHint): ErrorEvent | null {
   if (shouldDropDuplicate(fingerprintEvent(event))) {
     return null;
@@ -150,6 +160,7 @@ export function initSentry(options: VueSentryInitOptions): boolean {
     return false;
   }
 
+  // Field RUM, not Lighthouse lab. Sentry's Web Vitals page is initial page-load only.
   const tracing = options.router
     ? Sentry.browserTracingIntegration({ router: options.router })
     : Sentry.browserTracingIntegration();
@@ -159,12 +170,16 @@ export function initSentry(options: VueSentryInitOptions): boolean {
     dsn: config.dsn,
     environment: config.environment,
     release: config.release,
+    // sendDefaultPii is deprecated (removed in SDK v11). Keep false until then.
+    // Passing dataCollection opts you into permissive defaults: opt out explicitly.
     sendDefaultPii: false,
     dataCollection: {
       userInfo: false,
       httpBodies: [],
     },
     sampleRate: ERROR_SAMPLE_RATE,
+    // Static 0.05 for day one. When the API samples too, switch to tracesSampler
+    // and return inheritOrSampleWith(TRACES_SAMPLE_RATE) so traces stay joined.
     tracesSampleRate: TRACES_SAMPLE_RATE,
     replaysSessionSampleRate: REPLAY_SESSION_SAMPLE_RATE,
     replaysOnErrorSampleRate: REPLAY_ON_ERROR_SAMPLE_RATE,

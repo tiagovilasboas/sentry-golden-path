@@ -3,6 +3,17 @@
  * Placeholders only — never commit a real DSN.
  *
  * Import this module first in `main.tsx`, then call `initSentry()` once.
+ *
+ * Staff dials (docs/sampling.md, official JS sampling docs + sampling-strategy post):
+ * - sampleRate = errors. SDK default is 1 (every error). This kit starts at 0.1.
+ * - tracesSampleRate = uniform traces. Blog production example is 0.05. Wizard 1.0 is a demo.
+ * - Prefer tracesSampler + inheritOrSampleWith once the API is also instrumented.
+ * - replaysSessionSampleRate stays 0; replaysOnErrorSampleRate stays 1 (flight recorder).
+ *
+ * PII (docs/pii-and-filters.md): beforeSend scrubs on-device. Do not console.log PII
+ * (it becomes a breadcrumb). sendDefaultPii is deprecated; dataCollection opt-outs
+ * are the real control, and passing dataCollection opts you into permissive defaults.
+ *
  * Official API: https://docs.sentry.io/platforms/javascript/guides/react/
  */
 
@@ -86,6 +97,7 @@ function scrubEvent(event: ErrorEvent): ErrorEvent {
   return event;
 }
 
+/** Scrub on-device so PII never leaves the browser. Do not also console.log the raw string. */
 export function beforeSend(event: ErrorEvent, _hint: EventHint): ErrorEvent | null {
   const tagged: CaptureTags | undefined =
     typeof event.tags?.["domain"] === "string" && typeof event.tags?.["flow"] === "string"
@@ -150,17 +162,23 @@ export function initSentry(): boolean {
     dsn: config.dsn,
     environment: config.environment,
     release: config.release,
+    // sendDefaultPii is deprecated (removed in SDK v11). Keep false until then.
+    // Passing dataCollection opts you into permissive defaults: opt out explicitly.
     sendDefaultPii: false,
     dataCollection: {
       userInfo: false,
       httpBodies: [],
     },
     sampleRate: ERROR_SAMPLE_RATE,
+    // Static 0.05 for day one. When the API samples too, switch to tracesSampler
+    // and return inheritOrSampleWith(TRACES_SAMPLE_RATE) so traces stay joined.
     tracesSampleRate: TRACES_SAMPLE_RATE,
     replaysSessionSampleRate: REPLAY_SESSION_SAMPLE_RATE,
     replaysOnErrorSampleRate: REPLAY_ON_ERROR_SAMPLE_RATE,
     tracePropagationTargets: ["localhost", /^https:\/\/api\.your-app\.example\//],
     integrations: [
+      // Field RUM (real users), not Lighthouse lab. Sentry's Web Vitals page is
+      // initial page-load oriented; a load missing a required vital drops from samples.
       Sentry.browserTracingIntegration({
         enableInp: true,
         enableLongTask: true,
