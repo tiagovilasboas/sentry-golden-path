@@ -155,6 +155,15 @@ export function collectReadmeStandaloneErrors(source) {
   if (!/web\.dev\/articles\/vitals/.test(source)) {
     errors.push("README.md must cite Web Vitals.");
   }
+  if (!/data-management\/sensitive-data/.test(source)) {
+    errors.push("README.md must cite official sensitive-data docs.");
+  }
+  if (!/sre\.google\/sre-book\/service-level-objectives/.test(source)) {
+    errors.push("README.md must cite the SRE SLO chapter.");
+  }
+  if (!/inheritOrSampleWith/.test(source)) {
+    errors.push("README.md must mention inheritOrSampleWith.");
+  }
   errors.push(...collectSiblingFarmErrors("README.md", source));
   return errors;
 }
@@ -197,10 +206,23 @@ export function collectLlmsTxtErrors(source) {
  * @returns {string[]}
  */
 export function collectObservabilityMapErrors(source) {
+  const errors = [];
   if (!/ai-llm-monitoring\.md/.test(source)) {
-    return ["docs/observability-map.md must link ai-llm-monitoring.md."];
+    errors.push("docs/observability-map.md must link ai-llm-monitoring.md.");
   }
-  return [];
+  if (!/sre\.google\/sre-book\/monitoring-distributed-systems/.test(source)) {
+    errors.push("docs/observability-map.md must cite Golden Signals.");
+  }
+  if (!/sre\.google\/sre-book\/service-level-objectives/.test(source)) {
+    errors.push("docs/observability-map.md must cite the SRE SLO chapter.");
+  }
+  if (!/error-free sessions/i.test(source) || !/critical flow/i.test(source)) {
+    errors.push("docs/observability-map.md must teach front-end SLI shapes.");
+  }
+  if (!/error budget/i.test(source) || !/release policy/.test(source)) {
+    errors.push("docs/observability-map.md must teach error budget as release policy.");
+  }
+  return errors;
 }
 
 /**
@@ -218,6 +240,24 @@ export function collectSamplingDocErrors(source) {
   if (!/\bLCP\b/.test(source) || !/\bINP\b/.test(source) || !/\bCLS\b/.test(source)) {
     errors.push("docs/sampling.md must mention Web Vitals LCP / INP / CLS.");
   }
+  if (!/tracesSampler/.test(source) || !/inheritOrSampleWith/.test(source)) {
+    errors.push("docs/sampling.md must teach tracesSampler and inheritOrSampleWith.");
+  }
+  if (!/docs\.sentry\.io\/platforms\/javascript\/sampling/.test(source)) {
+    errors.push("docs/sampling.md must cite official Sentry JavaScript sampling docs.");
+  }
+  if (!/blog\.sentry\.io\/sampling-strategy-sentry/.test(source)) {
+    errors.push("docs/sampling.md must cite the Sentry sampling strategy article.");
+  }
+  if (!/web\.dev\/articles\/vitals/.test(source)) {
+    errors.push("docs/sampling.md must cite Web Vitals (web.dev).");
+  }
+  if (!/product\/dashboards\/sentry-dashboards\/frontend\/web-vitals/.test(source)) {
+    errors.push("docs/sampling.md must cite the Sentry Web Vitals dashboard.");
+  }
+  if (!/initial page-load/.test(source) || !/missing a required vital/.test(source)) {
+    errors.push("docs/sampling.md must teach initial page-load scope and dropped samples.");
+  }
   return errors;
 }
 
@@ -232,6 +272,18 @@ export function collectPiiDocErrors(source) {
   }
   if (!/sendDefaultPii/.test(source)) {
     errors.push("docs/pii-and-filters.md must document sendDefaultPii.");
+  }
+  if (!/dataCollection/.test(source) || !/deprecated/.test(source)) {
+    errors.push("docs/pii-and-filters.md must teach sendDefaultPii deprecated → dataCollection.");
+  }
+  if (!/beforeSendSpan/.test(source)) {
+    errors.push("docs/pii-and-filters.md must document beforeSend* hooks (beforeSendSpan).");
+  }
+  if (!/breadcrumb/i.test(source)) {
+    errors.push("docs/pii-and-filters.md must warn against logging PII into breadcrumbs.");
+  }
+  if (!/sensitive-data/.test(source)) {
+    errors.push("docs/pii-and-filters.md must cite official sensitive-data docs.");
   }
   if (!/ignoreErrors/.test(source) || !/denyUrls/.test(source)) {
     errors.push("docs/pii-and-filters.md must document ignoreErrors and denyUrls.");
