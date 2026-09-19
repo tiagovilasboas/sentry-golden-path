@@ -1,6 +1,6 @@
 # Contributing
 
-This repository is a **Staff-grade golden path** for Sentry on the front end: copy-pasteable patterns with conservative, production-safe defaults. It is not a consultancy pitch and not a dump of vendor wizard defaults (`tracesSampleRate: 1.0`).
+This repository is a **Staff-grade golden path** for Sentry on the front end: copy-pasteable patterns with conservative defaults. It is not a consultancy pitch, not a production org, and not a dump of vendor wizard defaults (`tracesSampleRate: 1.0`).
 
 Read [AGENTS.md](AGENTS.md) before editing. Open a pull request against `main` — do not commit to `main`.
 

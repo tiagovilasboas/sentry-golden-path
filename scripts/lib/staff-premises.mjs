@@ -315,6 +315,9 @@ export function collectDomainDocErrors(source) {
   if (!/withScope/.test(source)) {
     errors.push("docs/domain-tags.md must show withScope capture.");
   }
+  if (!/enriching-events\/tags/.test(source)) {
+    errors.push("docs/domain-tags.md must cite official Sentry tags docs.");
+  }
   return errors;
 }
 

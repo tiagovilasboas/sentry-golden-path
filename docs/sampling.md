@@ -70,7 +70,7 @@ Volume ≈ `sessions × sampleRate` (errors) + `pageloads × tracesSampleRate` (
 
 1. Ship the table above.
 2. After a few days, open Stats / Usage. If error quota is idle **and** you are missing rare bugs, raise `sampleRate` toward `0.2`, then `0.5`. The official default (`1.0`) is the ceiling, not the starting point on a busy SPA.
-3. If Performance is empty, raise the **fallback** inside `inheritOrSampleWith` toward `0.1`. Web Vitals are statistical; 5% of a large site is enough to see LCP/INP/CLS *shape*. 100% is almost never worth it on the client.
+3. If Performance is empty, raise the **fallback** inside `inheritOrSampleWith` toward `0.1`. Web Vitals are statistical; 5% of a large site is enough to see LCP/INP/CLS *shape*. 100% client traces are a budget decision, not a starting default.
 4. Turn on session replay only for a named funnel, or start replay manually. The blog’s first production snippet uses `replaysSessionSampleRate: 0.01` for full-session recording. Do not turn it on globally.
 
 Document the change in the PR that bumps the constant. Do not “temporarily” set `1.0` and forget it.
