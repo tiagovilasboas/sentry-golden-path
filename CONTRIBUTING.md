@@ -1,6 +1,6 @@
 # Contributing
 
-This repository is a **Staff-grade golden path** for Sentry on the front end: copy-pasteable patterns with conservative, production-safe defaults. It is not a consultancy pitch and not a dump of vendor wizard defaults (`tracesSampleRate: 1.0`).
+This repository is a **Staff-grade golden path** for Sentry on the front end: copy-pasteable patterns with conservative defaults. It is not a consultancy pitch, not a production org, and not a dump of vendor wizard defaults (`tracesSampleRate: 1.0`).
 
 Read [AGENTS.md](AGENTS.md) before editing. Open a pull request against `main` — do not commit to `main`.
 
@@ -29,7 +29,7 @@ npm ci
 npm test
 ```
 
-`npm test` typechecks `examples/` (including `agent-span.example.ts`), runs `scripts/check.mjs`, and executes Staff-premise fixtures in `scripts/staff-premises.test.mjs`. The check fails when examples drift above conservative caps, drop `beforeSend` / PII masks / `domain` helpers, ship a real DSN, or when the README advertises sibling repos.
+`npm test` typechecks `examples/` (including `agent-span.example.ts`), runs `scripts/check.mjs`, and executes Staff-premise fixtures in `scripts/staff-premises.test.mjs`. The check fails when examples drift above conservative caps, drop `beforeSend` / PII masks / `domain` helpers, ship a real DSN, or when the README advertises sibling repos. `scripts/fixtures/sampling-over-cap.ts` is an anti-fixture: the Staff check must keep reporting that `tracesSampleRate: 1.0` FAIL.
 
 ## Pull requests
 

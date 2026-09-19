@@ -164,6 +164,15 @@ export function collectReadmeStandaloneErrors(source) {
   if (!/inheritOrSampleWith/.test(source)) {
     errors.push("README.md must mention inheritOrSampleWith.");
   }
+  if (!/## What fails on purpose/.test(source)) {
+    errors.push("README.md must include What fails on purpose.");
+  }
+  if (!/\bLimit:/.test(source) || !/does not prove brand rates/.test(source) || !/production org/.test(source)) {
+    errors.push("README.md must state the Limit: does not prove brand rates / production org.");
+  }
+  if (!/sampling-over-cap/.test(source) || !/exceeds conservative tracesSampleRate cap 0\.05/.test(source)) {
+    errors.push("README.md must paste the sampling-over-cap FAIL output.");
+  }
   errors.push(...collectSiblingFarmErrors("README.md", source));
   return errors;
 }
@@ -306,6 +315,9 @@ export function collectDomainDocErrors(source) {
   if (!/withScope/.test(source)) {
     errors.push("docs/domain-tags.md must show withScope capture.");
   }
+  if (!/enriching-events\/tags/.test(source)) {
+    errors.push("docs/domain-tags.md must cite official Sentry tags docs.");
+  }
   return errors;
 }
 
@@ -332,6 +344,29 @@ function collectRateCapErrors(rel, source, cap, names) {
 }
 
 /**
+ * Rate-cap scan used on copy-paste inits and on the sampling-over-cap anti-fixture.
+ * @param {string} rel
+ * @param {string} source
+ * @returns {string[]}
+ */
+export function collectSamplingCapErrors(rel, source) {
+  return [
+    ...collectRateCapErrors(rel, source, { max: ERROR_SAMPLE_CAP, label: "sampleRate" }, [
+      "ERROR_SAMPLE_RATE",
+      "sampleRate",
+    ]),
+    ...collectRateCapErrors(rel, source, { max: TRACES_SAMPLE_CAP, label: "tracesSampleRate" }, [
+      "TRACES_SAMPLE_RATE",
+      "tracesSampleRate",
+    ]),
+    ...collectRateCapErrors(rel, source, { max: REPLAY_SESSION_CAP, label: "replaysSessionSampleRate" }, [
+      "REPLAY_SESSION_SAMPLE_RATE",
+      "replaysSessionSampleRate",
+    ]),
+  ];
+}
+
+/**
  * Copy-paste SPA inits must keep the Staff defaults the docs claim.
  * @param {string} rel
  * @param {string} source
@@ -350,24 +385,7 @@ export function collectInitExampleErrors(rel, source) {
     errors.push(`${rel}: replay-on-error must default to 1.`);
   }
 
-  errors.push(
-    ...collectRateCapErrors(rel, source, { max: ERROR_SAMPLE_CAP, label: "sampleRate" }, [
-      "ERROR_SAMPLE_RATE",
-      "sampleRate",
-    ]),
-  );
-  errors.push(
-    ...collectRateCapErrors(rel, source, { max: TRACES_SAMPLE_CAP, label: "tracesSampleRate" }, [
-      "TRACES_SAMPLE_RATE",
-      "tracesSampleRate",
-    ]),
-  );
-  errors.push(
-    ...collectRateCapErrors(rel, source, { max: REPLAY_SESSION_CAP, label: "replaysSessionSampleRate" }, [
-      "REPLAY_SESSION_SAMPLE_RATE",
-      "replaysSessionSampleRate",
-    ]),
-  );
+  errors.push(...collectSamplingCapErrors(rel, source));
 
   const required = [
     [/export function beforeSend\b/, "beforeSend helper missing"],

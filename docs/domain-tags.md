@@ -2,6 +2,11 @@
 
 An exception without product context is a stack with a shrug. Tag the **business slice** at the call site so Issues, alerts, and searches match how the team actually works.
 
+Official refs (tag keys and values, not a brand taxonomy):
+
+- [Sentry tags (JavaScript)](https://docs.sentry.io/platforms/javascript/enriching-events/tags/)
+- [Sentry context (JavaScript)](https://docs.sentry.io/platforms/javascript/enriching-events/context/)
+
 ## Tags: `domain` and `flow`
 
 | Tag | Meaning | Examples |
