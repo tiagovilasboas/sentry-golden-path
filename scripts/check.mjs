@@ -1,10 +1,28 @@
 #!/usr/bin/env node
 /**
- * Repo hygiene: AGENTS.md length, README shape, no firm IP, placeholder DSNs only,
- * llms.txt pointers, and agent-span example invariants.
+ * Repo hygiene + Staff premises: AGENTS.md length, README shape, no firm IP,
+ * placeholder DSNs only, conservative sampling/PII/domain helpers in examples,
+ * and runnable maskPii / short-window dedup behavior.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import {
+  collectAgentExampleErrors,
+  collectAgentsMdErrors,
+  collectDomainDocErrors,
+  collectFirmIpErrors,
+  collectGuardBehaviorErrors,
+  collectInitExampleErrors,
+  collectLlmsTxtErrors,
+  collectNumericIngestErrors,
+  collectObservabilityMapErrors,
+  collectPiiDocErrors,
+  collectReadmeShapeErrors,
+  collectReadmeStandaloneErrors,
+  collectSamplingDocErrors,
+  collectSiblingFarmErrors,
+  lineCountWithoutTrailingNl,
+} from "./lib/staff-premises.mjs";
 
 const root = process.cwd();
 const errors = [];
@@ -28,36 +46,12 @@ function read(path) {
   return readFileSync(path, "utf8");
 }
 
-const agents = read(join(root, "AGENTS.md")).split(/\r?\n/);
-const agentsLines = agents.length > 0 && agents[agents.length - 1] === "" ? agents.length - 1 : agents.length;
-if (agentsLines > 80) {
-  errors.push(`AGENTS.md is ${agentsLines} lines; source of truth must stay ≤ 80.`);
-}
+const agents = read(join(root, "AGENTS.md"));
+errors.push(...collectAgentsMdErrors(agents));
 
 const readme = read(join(root, "README.md"));
-if (/^##\s+Purpose\b/m.test(readme) || /^##\s+Propósito\b/m.test(readme)) {
-  errors.push("README.md must not contain a Purpose / Propósito section.");
-}
-if (!/^# Sentry Golden Path/m.test(readme)) {
-  errors.push("README.md must start with the Staff title.");
-}
-if (!/## Start/.test(readme) || !/## Contents/.test(readme) || !/## Layout/.test(readme)) {
-  errors.push("README.md must include Start, Contents, and Layout.");
-}
-if (!/docs\/ai-llm-monitoring\.md/.test(readme)) {
-  errors.push("README.md must link docs/ai-llm-monitoring.md.");
-}
-if (/—/.test(readme)) {
-  errors.push("README.md must not use an em dash.");
-}
-
-const forbidden = [
-  /\bCogna\b/i,
-  /\bVoomp\b/i,
-  /\bGreenn\b/i,
-  /Variable Group/i,
-  /confluence\.(atlassian|com)/i,
-];
+errors.push(...collectReadmeShapeErrors(readme));
+errors.push(...collectReadmeStandaloneErrors(readme));
 
 const textFiles = walk(root).filter((path) =>
   /\.(md|ts|mjs|yml|yaml|json|mdc|txt)$/.test(path) && !path.endsWith("package-lock.json"),
@@ -65,70 +59,31 @@ const textFiles = walk(root).filter((path) =>
 
 for (const file of textFiles) {
   const rel = relative(root, file);
-  if (rel === "scripts/check.mjs") {
-    continue;
-  }
+  const skipPolicy = rel === "scripts/check.mjs" || rel.startsWith("scripts/lib/") || rel.endsWith(".test.mjs");
   const body = read(file);
-  for (const pattern of forbidden) {
-    if (pattern.test(body)) {
-      errors.push(`${rel}: forbidden firm-IP pattern ${pattern}`);
-    }
+  if (!skipPolicy) {
+    errors.push(...collectFirmIpErrors(rel, body));
   }
-  const dsnHits = body.match(/o\d+\.ingest\.sentry\.io/g) ?? [];
-  if (dsnHits.length > 0) {
-    errors.push(`${rel}: numeric Sentry ingest host (use oXXXX placeholder): ${dsnHits.join(", ")}`);
+  if (!rel.endsWith(".test.mjs")) {
+    errors.push(...collectNumericIngestErrors(rel, body));
   }
-}
-
-const observability = read(join(root, "docs/observability-map.md"));
-if (!/ai-llm-monitoring\.md/.test(observability)) {
-  errors.push("docs/observability-map.md must link ai-llm-monitoring.md.");
-}
-
-const llmsTxt = read(join(root, "llms.txt"));
-for (const needle of [
-  "docs/golden-path.md",
-  "docs/observability-map.md",
-  "docs/ai-llm-monitoring.md",
-  "examples/agent-span.example.ts",
-]) {
-  if (!llmsTxt.includes(needle)) {
-    errors.push(`llms.txt must point at ${needle}.`);
+  if ((rel.endsWith(".md") || rel === "llms.txt") && rel !== "README.md") {
+    errors.push(...collectSiblingFarmErrors(rel, body));
   }
 }
 
-const agentExamplePath = "examples/agent-span.example.ts";
-const agentExample = read(join(root, agentExamplePath));
-if (!/AGENT_SPAN_OPS/.test(agentExample)) {
-  errors.push(`${agentExamplePath}: AGENT_SPAN_OPS missing.`);
-}
-if (!/gen_ai\.invoke_agent/.test(agentExample) || !/gen_ai\.chat/.test(agentExample)) {
-  errors.push(`${agentExamplePath}: gen_ai.invoke_agent / gen_ai.chat ops missing.`);
-}
-if (!/CAPTURE_PROMPTS = false/.test(agentExample)) {
-  errors.push(`${agentExamplePath}: prompts must default to not captured.`);
-}
-if (!/addBreadcrumb/.test(agentExample) || !/recordTokenBreadcrumb/.test(agentExample)) {
-  errors.push(`${agentExamplePath}: token/cost breadcrumb helper missing.`);
-}
-if (/tracesSampleRate:\s*1/.test(agentExample)) {
-  errors.push(`${agentExamplePath}: do not ship tracesSampleRate 1.0 as a default.`);
-}
-if (/setAttribute\(\s*["']gen_ai\.(?:input|output)\.messages["']/.test(agentExample)) {
-  errors.push(`${agentExamplePath}: do not attach prompt/completion message attributes.`);
-}
+errors.push(...collectObservabilityMapErrors(read(join(root, "docs/observability-map.md"))));
+errors.push(...collectSamplingDocErrors(read(join(root, "docs/sampling.md"))));
+errors.push(...collectPiiDocErrors(read(join(root, "docs/pii-and-filters.md"))));
+errors.push(...collectDomainDocErrors(read(join(root, "docs/domain-tags.md"))));
+errors.push(...collectLlmsTxtErrors(read(join(root, "llms.txt"))));
+errors.push(...collectAgentExampleErrors(read(join(root, "examples/agent-span.example.ts"))));
 
-const rates = {
-  "examples/react-init.ts": read(join(root, "examples/react-init.ts")),
-  "examples/vue-nuxt-init.ts": read(join(root, "examples/vue-nuxt-init.ts")),
-};
-for (const [file, body] of Object.entries(rates)) {
-  if (!/ERROR_SAMPLE_RATE = 0\.1/.test(body) || !/TRACES_SAMPLE_RATE = 0\.05/.test(body)) {
-    errors.push(`${file}: conservative sampleRate / tracesSampleRate constants missing.`);
-  }
-  if (!/REPLAY_SESSION_SAMPLE_RATE = 0/.test(body)) {
-    errors.push(`${file}: session replay must default to 0.`);
-  }
+const initFiles = ["examples/react-init.ts", "examples/vue-nuxt-init.ts"];
+for (const rel of initFiles) {
+  const body = read(join(root, rel));
+  errors.push(...collectInitExampleErrors(rel, body));
+  errors.push(...collectGuardBehaviorErrors(rel, body));
 }
 
 if (errors.length > 0) {
@@ -138,4 +93,5 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
+const agentsLines = lineCountWithoutTrailingNl(agents);
 console.log(`check: ok (AGENTS.md ${agentsLines} lines)`);
