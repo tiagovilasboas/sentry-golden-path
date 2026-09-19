@@ -164,6 +164,15 @@ export function collectReadmeStandaloneErrors(source) {
   if (!/inheritOrSampleWith/.test(source)) {
     errors.push("README.md must mention inheritOrSampleWith.");
   }
+  if (!/## What fails on purpose/.test(source)) {
+    errors.push("README.md must include What fails on purpose.");
+  }
+  if (!/\bLimit:/.test(source) || !/does not prove brand rates/.test(source) || !/production org/.test(source)) {
+    errors.push("README.md must state the Limit: does not prove brand rates / production org.");
+  }
+  if (!/sampling-over-cap/.test(source) || !/exceeds conservative tracesSampleRate cap 0\.05/.test(source)) {
+    errors.push("README.md must paste the sampling-over-cap FAIL output.");
+  }
   errors.push(...collectSiblingFarmErrors("README.md", source));
   return errors;
 }

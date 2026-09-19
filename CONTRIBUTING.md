@@ -29,7 +29,7 @@ npm ci
 npm test
 ```
 
-`npm test` typechecks `examples/` (including `agent-span.example.ts`), runs `scripts/check.mjs`, and executes Staff-premise fixtures in `scripts/staff-premises.test.mjs`. The check fails when examples drift above conservative caps, drop `beforeSend` / PII masks / `domain` helpers, ship a real DSN, or when the README advertises sibling repos.
+`npm test` typechecks `examples/` (including `agent-span.example.ts`), runs `scripts/check.mjs`, and executes Staff-premise fixtures in `scripts/staff-premises.test.mjs`. The check fails when examples drift above conservative caps, drop `beforeSend` / PII masks / `domain` helpers, ship a real DSN, or when the README advertises sibling repos. `scripts/fixtures/sampling-over-cap.ts` is an anti-fixture: the Staff check must keep reporting that `tracesSampleRate: 1.0` FAIL.
 
 ## Pull requests
 
