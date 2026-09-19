@@ -29,7 +29,7 @@ npm ci
 npm test
 ```
 
-`npm test` typechecks `examples/` (including `agent-span.example.ts`) and runs `scripts/check.mjs` (AGENTS.md length, forbidden strings, placeholder DSN shape, `llms.txt` pointers, agent-span invariants).
+`npm test` typechecks `examples/` (including `agent-span.example.ts`), runs `scripts/check.mjs`, and executes Staff-premise fixtures in `scripts/staff-premises.test.mjs`. The check fails when examples drift above conservative caps, drop `beforeSend` / PII masks / `domain` helpers, ship a real DSN, or when the README advertises sibling repos.
 
 ## Pull requests
 

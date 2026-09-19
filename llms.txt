@@ -17,6 +17,10 @@
 - [examples/vue-nuxt-init.ts](examples/vue-nuxt-init.ts): Vue 3 / Nuxt client init (placeholders)
 - [examples/agent-span.example.ts](examples/agent-span.example.ts): Manual agent/LLM spans (no prompt capture)
 
+## Verify
+
+- `npm ci && npm test`: typecheck examples and fail if Staff premises drift (sampling caps, beforeSend / PII, domain tags, sibling-repo advertising)
+
 ## Agent notes
 
 - [AGENTS.md](AGENTS.md): Constraints for coding agents (source of truth, max 80 lines)

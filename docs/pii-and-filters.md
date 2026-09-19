@@ -23,7 +23,7 @@ Also:
 - Do not `Sentry.setUser({ email, ip_address })` unless you have a documented need. Prefer an opaque `id`.
 - Replay: `maskAllText: true`, `blockAllMedia: true`. Unmasking a checkout form is an AppSec decision, not a DX convenience.
 
-Copy-paste implementation: [examples/react-init.ts](../examples/react-init.ts) (`maskPii`, `beforeSend`).
+Apply the specific shapes first (email, `+` phone, document with separators), then the generic 13–19 digit card run. Otherwise a Brazilian MSISDN is labeled `[FILTERED_CARD]`. Copy-paste implementation: [examples/react-init.ts](../examples/react-init.ts) (`maskPii`, `beforeSend`).
 
 ## `ignoreErrors` and `denyUrls`
 
