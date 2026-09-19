@@ -2,7 +2,7 @@
 
 Sentry is for **user-journey failures**: an unhandled exception on checkout, a white screen after navigation, a broken interaction that the browser actually threw. Metrics backends (Prometheus, CloudWatch, OpenTelemetry metrics) answer **server health**: saturation, error *rate* on a scrape, p99 of a handler. You need both. Sentry does not replace RED/USE dashboards; dashboards do not give you the release, the stack, the replay-on-error, or the `domain`/`flow` of the click that broke. Vocabulary (Golden Signals, SLI/SLO, error budget, correlation): [observability-map.md](observability-map.md).
 
-This guide is conservative on purpose. Wizard samples often ship `tracesSampleRate: 1.0` and session replay at 10%. That is a demo, not a production default. Start low; raise with a budget. See [sampling.md](sampling.md).
+This guide is conservative on purpose. The JS SDK **defaults `sampleRate` to `1`** (every error). First-run / wizard snippets often also set `tracesSampleRate: 1.0` and a non-zero session replay. The [sampling docs](https://docs.sentry.io/platforms/javascript/sampling/) and the [sampling-strategy post](https://blog.sentry.io/sampling-strategy-sentry/) treat that as “see everything while you learn,” then tighten: errors stay high-signal, traces go conservative (the blog’s production example is `0.05`), session replay stays low, replay-on-error stays high. **`1.0` is a demo, not a production default on a busy SPA.** Start low; raise with a budget. See [sampling.md](sampling.md).
 
 ## 1. Create a Sentry project
 
@@ -67,7 +67,7 @@ if (import.meta.env.PROD) {
 
 If you must test ingest, use a **separate** Sentry project (`your-app-dev`) and still keep sample rates low. Do not point production DSN at `localhost`.
 
-Full init: [examples/react-init.ts](../examples/react-init.ts). Conservative rates, `sendDefaultPii: false`, replay on error only, `beforeSend` masking, `ignoreErrors` / `denyUrls`, and `withScope` tags live there so this page stays a map.
+Full init: [examples/react-init.ts](../examples/react-init.ts). Conservative rates, `sendDefaultPii: false` plus explicit `dataCollection` opt-outs (`sendDefaultPii` is [deprecated](https://docs.sentry.io/platforms/javascript/configuration/options/); passing `dataCollection` opts you into permissive defaults unless you opt out), replay on error only, `beforeSend` masking **before the event leaves the device**, `ignoreErrors` / `denyUrls`, and `withScope` tags live there so this page stays a map. When the API is also instrumented, replace the static `tracesSampleRate` with `tracesSampler` + `inheritOrSampleWith` ([sampling.md](sampling.md)).
 
 ## 5. Source maps and release naming
 
@@ -121,9 +121,9 @@ Full notes (span tree, prompt policy, token/cost breadcrumbs, failure modes, `tr
 2. `npm install @sentry/react` (or `@sentry/vue` / `@sentry/nuxt`).
 3. Copy [examples/react-init.ts](../examples/react-init.ts) to `src/instrument.ts`. Replace placeholders. Import it first in the entry file.
 4. Confirm **production-only** gate. Confirm rates: `sampleRate` ≤ 0.1, `tracesSampleRate` ≤ 0.05, `replaysSessionSampleRate` 0, `replaysOnErrorSampleRate` 1.
-5. Set `sendDefaultPii: false` and `dataCollection: { userInfo: false, httpBodies: [] }`. Keep `beforeSend` + `ignoreErrors` / `denyUrls` from the example.
+5. Set `sendDefaultPii: false` and explicit `dataCollection` opt-outs (`userInfo: false`, `httpBodies: []` at minimum). Keep `beforeSend` + `ignoreErrors` / `denyUrls` from the example. Do not log PII that will become a breadcrumb.
 6. Wire `domain` / `flow` at the call site ([domain-tags.md](domain-tags.md)). Do not throw-and-forget.
 7. Add the source-map plugin. Set `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`, `SENTRY_RELEASE` in CI. Same `release` in `init`.
 8. Deploy production. Trigger one **intentional** test error on a staging project first if you can; then a guarded prod probe.
-9. In Sentry: Issues (event landed), Replays (on-error only), Performance / Traces (sparse Web Vitals), Releases (maps attached).
+9. In Sentry: Issues (event landed), Replays (on-error only), Performance / Traces (sparse **field** Web Vitals; the [Web Vitals page](https://docs.sentry.io/product/dashboards/sentry-dashboards/frontend/web-vitals/) is initial page-load only and drops samples missing a required vital), Releases (maps attached).
 10. Stop. Do not raise sample rates, enable session replay, or add profiling until quota and alert noise are boring.
