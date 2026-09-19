@@ -26,7 +26,7 @@ Sentry.withScope((scope) => {
 
 Set a default domain in `init` only if the whole bundle is one context (a dedicated checkout SPA). Multi-area apps should set tags per feature module.
 
-Search in Sentry: `domain:checkout flow:pay`. Alert on that pair, not on “any error in production”.
+Search in Sentry: `domain:checkout flow:pay`. Alert on that pair, not on “any error in production”. That pair is also the **critical-flow** SLI shape in [observability-map.md](observability-map.md): share of a named journey that finishes without a captured exception. Set the target from your product; this kit does not publish a brand nines figure.
 
 ## Short-window dedup
 

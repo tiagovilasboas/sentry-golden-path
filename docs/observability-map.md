@@ -2,9 +2,16 @@
 
 Staff vocabulary, mapped to this golden path. Sentry is the **user-journey** slice: errors plus **sampled** browser traces (Web Vitals). It is not a metrics warehouse, a log drain, or an SRE textbook. Placeholders: `YOUR_ORG`, `your-app`.
 
-Rates already in the kit — [sampling.md](sampling.md) — are how **errors** and **latency** stay cheap: `sampleRate` ≤ 0.1, `tracesSampleRate` ≤ 0.05. That is Golden Signals / RED on the client, not 100% RUM.
+Official refs:
 
-## Three pillars — logs, metrics, traces
+- [Golden Signals (SRE book)](https://sre.google/sre-book/monitoring-distributed-systems/)
+- [Service Level Objectives (SRE book)](https://sre.google/sre-book/service-level-objectives/)
+- [Sentry sampling (JavaScript)](https://docs.sentry.io/platforms/javascript/sampling/)
+- [Web Vitals (web.dev)](https://web.dev/articles/vitals)
+
+Rates already in the kit — [sampling.md](sampling.md) — are how **errors** and **latency** stay cheap: `sampleRate` ≤ 0.1, `tracesSampleRate` ≤ 0.05. That is Golden Signals / RED on the client, not 100% RUM. These are kit caps, not a claim that a named brand ran them.
+
+## Three pillars: logs, metrics, traces
 
 **Logs** are discrete events (a line, ideally JSON). **Metrics** are aggregations over time (counters, histograms). **Traces** are a tree of spans for one request or page load.
 
@@ -12,9 +19,18 @@ Rates already in the kit — [sampling.md](sampling.md) — are how **errors** a
 
 ## Golden Signals (Google SRE)
 
-[Four signals](https://sre.google/sre-book/monitoring-distributed-systems/) for a user-facing system: **Latency**, **Traffic**, **Errors**, **Saturation**.
+The [Four Golden Signals](https://sre.google/sre-book/monitoring-distributed-systems/) for a user-facing system: **Latency**, **Traffic**, **Errors**, **Saturation**.
 
-**Sentry helps:** **Errors** (Issues) and **Latency** (sampled Web Vitals: LCP / INP / CLS, plus span duration). Conservative `tracesSampleRate` is enough to see latency *shape*; it is not a traffic counter. **Sentry does not:** **Traffic** (RPS, sessions as a capacity number) or **Saturation** (CPU, RAM, queue depth, thread pool). Those belong on a metrics backend.
+The browser SDK cheaply carries two of them:
+
+| Signal | In Sentry (this kit) | Not Sentry |
+| --- | --- | --- |
+| **Errors** | Issues, `sampleRate`, `domain` / `flow` | — |
+| **Latency** | Sampled Web Vitals (LCP / INP / CLS) and span duration | A traffic-weighted p99 of every pageload on earth |
+| **Traffic** | — | RPS, concurrent sessions as capacity. Metrics backend. |
+| **Saturation** | Only the *symptom* (timeouts, 503 pages) | CPU, RAM, queue depth, thread pool. Infra metrics. |
+
+A 5% `tracesSampleRate` is enough to see latency *shape*. It is not a request counter. If a dashboard promises all four signals from a front-end Sentry project alone, the premise is wrong.
 
 ## RED method
 
@@ -30,21 +46,43 @@ Rates already in the kit — [sampling.md](sampling.md) — are how **errors** a
 
 ## SLI / SLO / SLA
 
-An **SLI** is a measured ratio (e.g. share of checkouts that finish without a JS exception, or LCP p75 under 2.5s). An **SLO** is the target you commit to internally. An **SLA** is the contractual wrapper (credits, legal) — usually a subset of SLOs.
+The [SRE SLO chapter](https://sre.google/sre-book/service-level-objectives/) separates three terms people overload:
 
-**Sentry helps:** evidence for *user-visible* SLIs (issue rate by `release` / `domain` / `flow`, sampled vital percentiles). **Sentry does not:** replace SLO math or SLA legal text. Do not treat `sampleRate` 0.1 as “90% of users are fine.”
+| Term | Meaning |
+| --- | --- |
+| **SLI** | A carefully defined quantitative measure of a service level |
+| **SLO** | A target on that SLI (`SLI ≤ target`, or a band) |
+| **SLA** | A contract with **consequences** (credits, legal). If nothing happens when you miss, it is an SLO. |
 
-## Error budget
+SRE: start from what users care about, not from what is easy to scrape. Client-side latency is often the user-relevant measure; server-side latency can miss a broken JavaScript bundle. Prefer **percentiles** over averages so the tail is visible. Do not pick a target from “whatever we happen to have today.” 100% is neither realistic nor desirable.
 
-**Error budget** is the SLO remainder: `1 − SLO` over a window. Spend it on change; freeze when it is gone.
+### Front-end SLIs this kit can *evidence* (not invent targets)
 
-**Sentry helps:** *consume* budget when Issues spike after `your-app@1.2.3`. **Sentry does not:** compute the budget. Wire burn alerts in the same place you version SLOs (see Observability as code). Sampling means you **under-count** rare errors — do not burn the budget off raw Sentry volume without correcting for `sampleRate`.
+These are example **shapes**. Copy the shape; set the number from your product, not from this repo.
+
+| User-facing SLI | How you might read it | Where the number must *not* come from |
+| --- | --- | --- |
+| **Error-free sessions** (or error-free pageloads) | Share of sessions / loads without a JS exception on `your-app@<release>` | Raw Sentry volume without correcting for `sampleRate` |
+| **LCP / INP at p75** | Field Web Vitals on the initial load (Sentry) or your RUM store | A single Lighthouse run in CI |
+| **Critical flow success** | Share of `domain:checkout flow:pay` that finishes without a captured exception | “Any error in production” |
+
+**Sentry helps:** evidence for those SLIs (issue rate by `release` / `domain` / `flow`, sampled vital percentiles). **Sentry does not:** replace SLO math or SLA legal text. Do not treat `sampleRate` 0.1 as “90% of users are fine.”
+
+## Error budget as release policy
+
+The SLO chapter: it is better to allow an **error budget** (a rate at which SLOs may be missed) than to demand 100%. The gap between the burn and the budget is an input to **whether you roll out**. That is a release policy, not a Sentry toggle.
+
+**Sentry helps:** *consume* budget when Issues spike after `your-app@1.2.3`. **Sentry does not:** compute the budget. Wire burn alerts in the same place you version SLOs (see Observability as code). Sampling means you **under-count** rare errors — correct for `sampleRate` before you freeze the train.
+
+This page does not claim a named brand’s nines, a crash-free rate, or a conversion lift. Those numbers only belong in a write-up that measured them.
 
 ## Distributed tracing
 
 A **trace** is one directed graph of **spans** (parent/child) across services or from browser to API. Sentry’s `browserTracingIntegration` starts a trace on pageload/navigation and can propagate `sentry-trace` / `baggage` to APIs in `tracePropagationTargets`.
 
 **Sentry helps:** the front-end root and, if the API SDK is configured for the same `YOUR_ORG` / related projects, the join to server spans. **Sentry does not:** magically trace vendors you did not instrument. Keep targets narrow (`api.your-app.example`), not the open web.
+
+When both sides sample, prefer `tracesSampler` + `inheritOrSampleWith` so the browser inherits the API decision ([sampling.md](sampling.md)). Overriding the parent breaks the trace.
 
 ## Correlation / context propagation
 
@@ -60,7 +98,7 @@ A **trace** is one directed graph of **spans** (parent/child) across services or
 
 **Structured logs** are fields (`level`, `release`, `trace_id`, `msg`). Free text is a sentence you grep until it breaks.
 
-**Sentry helps:** error events are already structured (tags, extra, exception). Optional SDK logs are a Sentry product feature, not a substitute for the drain. **Sentry does not:** replace stdout JSON to Loki/ELK. Put PII rules in both places ([pii-and-filters.md](pii-and-filters.md)).
+**Sentry helps:** error events are already structured (tags, extra, exception). Optional SDK logs are a Sentry product feature, not a substitute for the drain. **Sentry does not:** replace stdout JSON to Loki/ELK. Put PII rules in both places ([pii-and-filters.md](pii-and-filters.md)). Do not log PII that the SDK will attach as a breadcrumb.
 
 ## Observability as code
 
@@ -76,7 +114,8 @@ Dashboards, alerts, SLOs, and this SDK init should live in **git** (`YOUR_ORG` /
 | Golden Signals **Latency** / RED **Duration** | `tracesSampleRate` ≤ 0.05, `browserTracingIntegration`, LCP / INP / CLS |
 | Golden Signals **Traffic** / RED **Rate** | Not Sentry — metrics backend |
 | USE / Saturation | Not Sentry — infra metrics |
-| Error budget | Product of your SLO, not a Sentry toggle; correct for sampling |
+| Front-end SLIs | Error-free sessions, field LCP/INP at p75, critical-flow success |
+| Error budget | Release policy (`1 − SLO`); correct Sentry volume for sampling |
 | Correlation | Same `release` in `Sentry.init` and logs; `trace_id` when the request was sampled |
 | LLM / agent traces | `gen_ai.*` spans on the **server** that calls the model; prompts are PII. See [ai-llm-monitoring.md](ai-llm-monitoring.md) |
 
