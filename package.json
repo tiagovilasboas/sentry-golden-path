@@ -13,7 +13,7 @@
     "test": "node scripts/check.mjs && node --test scripts/staff-premises.test.mjs && tsc --noEmit -p examples/tsconfig.json"
   },
   "devDependencies": {
-    "@sentry/react": "^10.32.1",
+    "@sentry/react": "^10.75.0",
     "@sentry/vue": "^10.32.1",
     "typescript": "^5.9.2",
     "vue": "^3.5.21"
