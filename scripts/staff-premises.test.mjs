@@ -147,6 +147,41 @@ describe("CPF masking", () => {
       assert.equal(maskPii("cpf 529.982.247-26 failed"), "cpf [FILTERED_DOCUMENT] failed");
     });
 
+    it(`${rel} masks CPF shapes by table`, () => {
+      const { maskPii } = extractExampleGuards(source);
+      const DOC = "[FILTERED_DOCUMENT]";
+      const cases = [
+        // separator in any position: masked even with wrong check digits
+        ["529.982.247-25", DOC],
+        ["529982247-25", DOC],
+        ["529982.247-25", DOC],
+        ["529.982247-25", DOC],
+        ["529982.24725", DOC],
+        ["529 982 247 25", DOC],
+        ["529982247-26", DOC],
+        // no separator: raw rule (valid mod-11, not repeated digits)
+        ["52998224725", DOC],
+        ["52998224726", "52998224726"],
+        ["11111111111", "11111111111"],
+        // never inside longer digit runs
+        ["529982247250", "529982247250"],
+        ["1529982247-25", "1529982247-25"],
+        ["529.982.247-251", "529.982.247-251"],
+        // other classes keep their labels
+        ["1727254800123", "[FILTERED_CARD]"],
+        ["+55 11 99999-8888", "[FILTERED_PHONE]"],
+        ["+5511999998888", "[FILTERED_PHONE]"],
+        ["5511999998888", "[FILTERED_CARD]"],
+        ["4111 1111 1111 1111", "[FILTERED_CARD]"],
+        ["4111-1111-1111-1111", "[FILTERED_CARD]"],
+        // recorded: the 6-5 tail of a spaced 15-digit Amex has the document shape
+        ["3782 822463 10005", `3782 ${DOC}`],
+      ];
+      for (const [input, expected] of cases) {
+        assert.equal(maskPii(`ctx ${input} end`), `ctx ${expected} end`, input);
+      }
+    });
+
     it(`${rel} keeps 11-digit runs that are not valid CPFs`, () => {
       const { maskPii } = extractExampleGuards(source);
       assert.equal(maskPii("order 52998224726 failed"), "order 52998224726 failed");

@@ -54,11 +54,11 @@ Generic patterns — **examples**, not a jurisdiction-complete detector:
 | Class | Example pattern | Replace with |
 | --- | --- | --- |
 | Payment card | 13–19 digits, optional spaces/dashes | `[FILTERED_CARD]` |
-| National / tax document | long digit groups (8–14) | `[FILTERED_DOCUMENT]` |
+| National / tax document | 3-3-3-2 digit groups with at least one separator (`.`, whitespace or `-`), e.g. CPF `000.000.000-00`, or a raw 11-digit CPF with valid check digits | `[FILTERED_DOCUMENT]` |
 | Phone | `+` / separators + 10–15 digits | `[FILTERED_PHONE]` |
 | Email | `user@host` | `[FILTERED_EMAIL]` |
 
-Apply the specific shapes first (email, `+` phone, document with separators), then the generic 13–19 digit card run. Otherwise a Brazilian MSISDN is labeled `[FILTERED_CARD]`. Copy-paste implementation: [examples/react-init.ts](../examples/react-init.ts) (`maskPii`, `beforeSend`).
+Apply the specific shapes first (email, `+` phone, document with separators), then the generic 13–19 digit card run. Otherwise a Brazilian MSISDN is labeled `[FILTERED_CARD]`. Raw 11-digit CPF runs are checked last: a run not glued to other digits is masked as a document only when its CPF mod-11 check digits are valid (repeated-digit runs such as `11111111111` are kept), while a CPF with separators is masked even if the check digits are wrong. Copy-paste implementation: [examples/react-init.ts](../examples/react-init.ts) (`maskPii`, `beforeSend`).
 
 Replay: `maskAllText: true`, `blockAllMedia: true`. Unmasking a checkout form is an AppSec decision, not a DX convenience.
 
