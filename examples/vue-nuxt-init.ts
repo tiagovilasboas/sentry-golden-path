@@ -67,15 +67,34 @@ const recentErrors = new Map<string, number>();
 
 const CARD_PATTERN = /\b(?:\d[ -]*?){13,19}\b/g;
 const DOCUMENT_PATTERN = /\b\d{3}[.\s-]\d{3}[.\s-]?\d{3}[.\s-]?\d{2}\b/g;
+const RAW_CPF_PATTERN = /(?<!\d)\d{11}(?!\d)/g;
 const PHONE_PATTERN = /\+\d[\d\s().-]{8,16}\d/g;
 const EMAIL_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
+
+/** Raw 11-digit runs are masked only when the CPF mod-11 check digits hold. */
+function maskRawCpf(digits: string): string {
+  if (/^(\d)\1{10}$/.test(digits)) {
+    return digits;
+  }
+  for (let length = 9; length < 11; length += 1) {
+    let sum = 0;
+    for (let i = 0; i < length; i += 1) {
+      sum += Number(digits[i]) * (length + 1 - i);
+    }
+    if (((sum * 10) % 11) % 10 !== Number(digits[length])) {
+      return digits;
+    }
+  }
+  return "[FILTERED_DOCUMENT]";
+}
 
 export function maskPii(value: string): string {
   return value
     .replace(EMAIL_PATTERN, "[FILTERED_EMAIL]")
     .replace(PHONE_PATTERN, "[FILTERED_PHONE]")
     .replace(DOCUMENT_PATTERN, "[FILTERED_DOCUMENT]")
-    .replace(CARD_PATTERN, "[FILTERED_CARD]");
+    .replace(CARD_PATTERN, "[FILTERED_CARD]")
+    .replace(RAW_CPF_PATTERN, maskRawCpf);
 }
 
 export function shouldDropDuplicate(fingerprint: string, now = Date.now()): boolean {

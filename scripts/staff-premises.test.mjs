@@ -134,6 +134,28 @@ describe("extracted guards are runnable", () => {
   });
 });
 
+describe("CPF masking", () => {
+  for (const [rel, source] of [
+    ["examples/react-init.ts", reactInit],
+    ["examples/vue-nuxt-init.ts", vueInit],
+  ]) {
+    it(`${rel} redacts raw and formatted CPFs`, () => {
+      const { maskPii } = extractExampleGuards(source);
+      assert.equal(maskPii("cpf 52998224725 failed"), "cpf [FILTERED_DOCUMENT] failed");
+      assert.equal(maskPii("/users/52998224725/orders"), "/users/[FILTERED_DOCUMENT]/orders");
+      assert.equal(maskPii("cpf 529.982.247-25 failed"), "cpf [FILTERED_DOCUMENT] failed");
+      assert.equal(maskPii("cpf 529.982.247-26 failed"), "cpf [FILTERED_DOCUMENT] failed");
+    });
+
+    it(`${rel} keeps 11-digit runs that are not valid CPFs`, () => {
+      const { maskPii } = extractExampleGuards(source);
+      assert.equal(maskPii("order 52998224726 failed"), "order 52998224726 failed");
+      assert.equal(maskPii("order 529982247250 failed"), "order 529982247250 failed");
+      assert.equal(maskPii("order 11111111111 failed"), "order 11111111111 failed");
+    });
+  }
+});
+
 describe("README standalone contract", () => {
   it("the real README leads with proof and has no sibling farm", () => {
     const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
