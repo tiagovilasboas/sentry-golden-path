@@ -13,7 +13,7 @@ npm test
 
 - `sampleRate` above 0.1 or `tracesSampleRate` above 0.05 in the examples
 - session replay sampled on the happy path
-- missing `beforeSend`, `maskPii`, or `sendDefaultPii: false`
+- missing `beforeSend` / `maskPii`, a `dataCollection` category left on the SDK v11 collect-all default, or `sendDefaultPii` reintroduced
 - missing `captureDomainError` / `domain` + `flow` helpers
 - a real Sentry DSN, or links to other Tiago repos
 
@@ -27,7 +27,7 @@ check: scripts/fixtures/sampling-over-cap.ts: tracesSampleRate=1.0 exceeds conse
 
 That is the point. Happy-path examples stay at 0.05 so this line does not ship.
 
-What the docs actually teach (cited, not invented): wizard / SDK `sampleRate: 1` and `tracesSampleRate: 1.0` are a demo; the [sampling-strategy post](https://blog.sentry.io/sampling-strategy-sentry/) uses `0.05` traces in production and replay-on-error as a flight recorder; `sendDefaultPii` is deprecated in favor of explicit `dataCollection` opt-outs; Sentry's Web Vitals page is initial page-load only and drops samples missing a required vital.
+What the docs actually teach (cited, not invented): wizard / SDK `sampleRate: 1` and `tracesSampleRate: 1.0` are a demo; the [sampling-strategy post](https://blog.sentry.io/sampling-strategy-sentry/) uses `0.05` traces in production and replay-on-error as a flight recorder; SDK v11 removed `sendDefaultPii` and collects every `dataCollection` category left unset ([migration guide](https://docs.sentry.io/platforms/javascript/migration/v10-to-v11/)); Sentry's Web Vitals page is initial page-load only and drops samples missing a required vital.
 
 Maintainer: [Tiago Montanha](https://github.com/tiagovilasboas) · Staff · Observability
 
@@ -42,7 +42,7 @@ Copy [examples/react-init.ts](examples/react-init.ts) or [examples/vue-nuxt-init
 | [docs/golden-path.md](docs/golden-path.md) | Why Sentry vs metrics backends; create project → SDK → env → **production-only init**; source maps; 15-minute checklist |
 | [docs/observability-map.md](docs/observability-map.md) | Golden Signals, RED/USE, front-end SLIs (error-free sessions, LCP/INP, critical flow), error budget as release policy |
 | [docs/sampling.md](docs/sampling.md) | `sampleRate` vs `tracesSampleRate` vs `tracesSampler` + `inheritOrSampleWith`; wizard 1.0 vs prod; field Web Vitals |
-| [docs/pii-and-filters.md](docs/pii-and-filters.md) | `beforeSend*` on-device, no PII in breadcrumbs, `sendDefaultPii` deprecated → `dataCollection` opt-outs |
+| [docs/pii-and-filters.md](docs/pii-and-filters.md) | `beforeSend*` on-device, no PII in breadcrumbs, `sendDefaultPii` removed in v11 → full `dataCollection` baseline |
 | [docs/domain-tags.md](docs/domain-tags.md) | `domain` + `flow` tags with context; short-window dedup against cascade spam |
 | [docs/ai-llm-monitoring.md](docs/ai-llm-monitoring.md) | LLM/agent `gen_ai.*` spans, prompts as PII, token/cost breadcrumbs, failure modes, sampling |
 
@@ -64,7 +64,8 @@ Cited in the docs. Not dependencies. This kit stays copy-pasteable.
 - [Sentry sampling (JavaScript)](https://docs.sentry.io/platforms/javascript/sampling/)
 - [A sampling strategy for Sentry](https://blog.sentry.io/sampling-strategy-sentry/)
 - [Scrubbing sensitive data](https://docs.sentry.io/platforms/javascript/data-management/sensitive-data/)
-- [SDK options (`sendDefaultPii` / `dataCollection`)](https://docs.sentry.io/platforms/javascript/configuration/options/)
+- [SDK options (`dataCollection`)](https://docs.sentry.io/platforms/javascript/configuration/options/)
+- [Migrate from 10.x to 11.x](https://docs.sentry.io/platforms/javascript/migration/v10-to-v11/)
 - [Sentry Web Vitals dashboard](https://docs.sentry.io/product/dashboards/sentry-dashboards/frontend/web-vitals/)
 - [Web Vitals (web.dev)](https://web.dev/articles/vitals)
 - [Golden Signals](https://sre.google/sre-book/monitoring-distributed-systems/) · [Service Level Objectives](https://sre.google/sre-book/service-level-objectives/)

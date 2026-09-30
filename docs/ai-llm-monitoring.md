@@ -37,7 +37,7 @@ Default in this kit: **do not** set `gen_ai.input.messages`, `gen_ai.output.mess
 
 If a later review turns capture on:
 
-- Gate it (`dataCollection.genAI` or `recordInputs` / `recordOutputs`). Keep `sendDefaultPii: false`.
+- Gate it (`dataCollection.genAI` or `recordInputs` / `recordOutputs`). Keep the rest of the `dataCollection` baseline off (SDK v11 collects gen AI inputs/outputs unless `genAI` is set to `false`).
 - Run the same `beforeSend` masks as the SPA ([pii-and-filters.md](pii-and-filters.md)).
 - Keep system instructions out of the message array (`gen_ai.system_instructions` only).
 - Extended thinking belongs in a `reasoning` part, never folded into `text`.
