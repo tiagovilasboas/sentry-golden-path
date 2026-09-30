@@ -26,7 +26,7 @@ adapters/cursor/              optional Cursor rule; AGENTS.md stays SoT
 - Default session replay to **0**; replay **on error only**. Raise rates later with a budget, not a guess.
 - Enable `browserTracingIntegration` for LCP / INP / CLS. Keep tracing sampled low.
 - Tag `domain` and `flow` via `withScope` (or equivalent). Do not `captureException` bare.
-- Mask PII in `beforeSend`. Set `sendDefaultPii: false`. Treat GDPR/LGPD as default, not an add-on.
+- Mask PII in `beforeSend`. Pin every `dataCollection` category off (SDK v11 has no `sendDefaultPii` and collects unset categories). Treat GDPR/LGPD as default, not an add-on.
 - Match `release` in `Sentry.init` to the source-map upload `release.name`. Match `SENTRY_PROJECT` to the **Sentry project slug**, not the git repo name.
 - Use placeholders: `YOUR_ORG`, `your-app`, `https://oXXXX.ingest.sentry.io/...`.
 - Keep `npm test` failing when Staff premises drift (rates, PII, domain tags).

@@ -27,6 +27,8 @@ Sentry.withScope((scope) => {
 });
 ```
 
+SDK v11 streams spans, and [scope tags no longer reach spans](https://docs.sentry.io/platforms/javascript/migration/v10-to-v11/): `domain` / `flow` tags land on **errors** (this kit's Issues and alerts). If you also need that slice on spans, logs, or metrics, set it with `Sentry.setAttribute` as well.
+
 `Sentry.captureException(error)` at a global `window.onerror` is a backstop. The golden path is: the module that knows the flow sets tags, then captures.
 
 Set a default domain in `init` only if the whole bundle is one context (a dedicated checkout SPA). Multi-area apps should set tags per feature module.

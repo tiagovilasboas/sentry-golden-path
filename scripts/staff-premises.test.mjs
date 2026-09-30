@@ -78,10 +78,22 @@ describe("a broken Staff premise fails", () => {
     assert.ok(errors.some((line) => /beforeSend helper missing/.test(line)));
   });
 
-  it("fails when sendDefaultPii is left on", () => {
-    const broken = reactInit.replace("sendDefaultPii: false", "sendDefaultPii: true");
+  it("fails when sendDefaultPii is reintroduced (removed in SDK v11)", () => {
+    const broken = reactInit.replace("dataCollection: {", "sendDefaultPii: false,\n    dataCollection: {");
     const errors = collectInitExampleErrors("examples/react-init.ts", broken);
-    assert.ok(errors.some((line) => /sendDefaultPii must be false/.test(line)));
+    assert.ok(errors.some((line) => /sendDefaultPii was removed in SDK v11/.test(line)));
+  });
+
+  it("fails when a v11 dataCollection category falls back to collect-all", () => {
+    const broken = reactInit.replace("      cookies: false,\n", "");
+    const errors = collectInitExampleErrors("examples/react-init.ts", broken);
+    assert.ok(errors.some((line) => /dataCollection\.cookies must be false/.test(line)));
+  });
+
+  it("fails when genAI prompts are collected by the SPA init", () => {
+    const broken = vueInit.replace("genAI: { inputs: false, outputs: false }", "genAI: { inputs: true, outputs: false }");
+    const errors = collectInitExampleErrors("examples/vue-nuxt-init.ts", broken);
+    assert.ok(errors.some((line) => /genAI inputs\/outputs must be false/.test(line)));
   });
 
   it("fails when domain tag helpers are removed", () => {

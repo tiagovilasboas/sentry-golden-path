@@ -67,7 +67,7 @@ if (import.meta.env.PROD) {
 
 If you must test ingest, use a **separate** Sentry project (`your-app-dev`) and still keep sample rates low. Do not point production DSN at `localhost`.
 
-Full init: [examples/react-init.ts](../examples/react-init.ts). Conservative rates, `sendDefaultPii: false` plus explicit `dataCollection` opt-outs (`sendDefaultPii` is [deprecated](https://docs.sentry.io/platforms/javascript/configuration/options/); passing `dataCollection` opts you into permissive defaults unless you opt out), replay on error only, `beforeSend` masking **before the event leaves the device**, `ignoreErrors` / `denyUrls`, and `withScope` tags live there so this page stays a map. When the API is also instrumented, replace the static `tracesSampleRate` with `tracesSampler` + `inheritOrSampleWith` ([sampling.md](sampling.md)).
+Full init: [examples/react-init.ts](../examples/react-init.ts). Conservative rates, the full v10 `dataCollection` baseline pinned per category (SDK v11 [removed `sendDefaultPii`](https://docs.sentry.io/platforms/javascript/migration/v10-to-v11/) and collects everything a category leaves unset), replay on error only, `beforeSend` masking **before the event leaves the device**, `ignoreErrors` / `denyUrls`, and `withScope` tags live there so this page stays a map. When the API is also instrumented, replace the static `tracesSampleRate` with `tracesSampler` + `inheritOrSampleWith` ([sampling.md](sampling.md)).
 
 ## 5. Source maps and release naming
 
@@ -121,7 +121,7 @@ Full notes (span tree, prompt policy, token/cost breadcrumbs, failure modes, `tr
 2. `npm install @sentry/react` (or `@sentry/vue` / `@sentry/nuxt`).
 3. Copy [examples/react-init.ts](../examples/react-init.ts) to `src/instrument.ts`. Replace placeholders. Import it first in the entry file.
 4. Confirm **production-only** gate. Confirm rates: `sampleRate` ≤ 0.1, `tracesSampleRate` ≤ 0.05, `replaysSessionSampleRate` 0, `replaysOnErrorSampleRate` 1.
-5. Set `sendDefaultPii: false` and explicit `dataCollection` opt-outs (`userInfo: false`, `httpBodies: []` at minimum). Keep `beforeSend` + `ignoreErrors` / `denyUrls` from the example. Do not log PII that will become a breadcrumb.
+5. Pin every `dataCollection` category to the v10 baseline (`userInfo`, `cookies`, `httpHeaders`, `httpBodies: []`, `urlQueryParams`, `genAI`, `databaseQueryData`, `graphQL`). SDK v11 has no `sendDefaultPii`, and an unset category collects everything. Keep `beforeSend` + `ignoreErrors` / `denyUrls` from the example. Do not log PII that will become a breadcrumb.
 6. Wire `domain` / `flow` at the call site ([domain-tags.md](domain-tags.md)). Do not throw-and-forget.
 7. Add the source-map plugin. Set `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`, `SENTRY_RELEASE` in CI. Same `release` in `init`.
 8. Deploy production. Trigger one **intentional** test error on a staging project first if you can; then a guarded prod probe.

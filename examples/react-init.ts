@@ -11,8 +11,8 @@
  * - replaysSessionSampleRate stays 0; replaysOnErrorSampleRate stays 1 (flight recorder).
  *
  * PII (docs/pii-and-filters.md): beforeSend scrubs on-device. Do not console.log PII
- * (it becomes a breadcrumb). sendDefaultPii is deprecated; dataCollection opt-outs
- * are the real control, and passing dataCollection opts you into permissive defaults.
+ * (it becomes a breadcrumb). SDK v11 removed sendDefaultPii; an unset dataCollection
+ * collects everything, so every category is pinned to the v10 baseline below.
  *
  * Official API: https://docs.sentry.io/platforms/javascript/guides/react/
  */
@@ -25,6 +25,12 @@ export const ERROR_SAMPLE_RATE = 0.1;
 export const TRACES_SAMPLE_RATE = 0.05;
 export const REPLAY_SESSION_SAMPLE_RATE = 0;
 export const REPLAY_ON_ERROR_SAMPLE_RATE = 1;
+
+/**
+ * v10 `sendDefaultPii: false` denylist for header / query keys (SDK v11 migration guide).
+ * The SDK still scrubs keys like `token` or `password` on top of this.
+ */
+export const PII_KEY_DENYLIST = ["forwarded", "-ip", "remote-", "via", "-user"];
 
 /** Replace in your app. Do not use a real ingest host in this repo. */
 export const PLACEHOLDER_DSN = "https://oXXXX.ingest.sentry.io/...";
@@ -181,12 +187,21 @@ export function initSentry(): boolean {
     dsn: config.dsn,
     environment: config.environment,
     release: config.release,
-    // sendDefaultPii is deprecated (removed in SDK v11). Keep false until then.
-    // Passing dataCollection opts you into permissive defaults: opt out explicitly.
-    sendDefaultPii: false,
+    // SDK v11 removed sendDefaultPii, and every dataCollection category left unset
+    // now collects by default. Pin the v10 baseline explicitly, per the official
+    // guide: https://docs.sentry.io/platforms/javascript/migration/v10-to-v11/
     dataCollection: {
       userInfo: false,
+      cookies: false,
+      httpHeaders: {
+        request: { deny: PII_KEY_DENYLIST },
+        response: { deny: PII_KEY_DENYLIST },
+      },
       httpBodies: [],
+      urlQueryParams: { deny: PII_KEY_DENYLIST },
+      genAI: { inputs: false, outputs: false },
+      databaseQueryData: false,
+      graphQL: { document: false, variables: false },
     },
     sampleRate: ERROR_SAMPLE_RATE,
     // Static 0.05 for day one. When the API samples too, switch to tracesSampler
@@ -198,8 +213,9 @@ export function initSentry(): boolean {
     integrations: [
       // Field RUM (real users), not Lighthouse lab. Sentry's Web Vitals page is
       // initial page-load oriented; a load missing a required vital drops from samples.
+      // v11: INP is on by default (enableInp is deprecated); stream-mode span names
+      // are already low cardinality, beforeStartSpan stays as a belt for custom names.
       Sentry.browserTracingIntegration({
-        enableInp: true,
         enableLongTask: true,
         beforeStartSpan: (spanContext) => {
           const raw = spanContext.name ?? "";

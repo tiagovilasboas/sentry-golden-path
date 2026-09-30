@@ -98,7 +98,7 @@ From the [Sentry Web Vitals dashboard](https://docs.sentry.io/product/dashboards
 - Opportunity is weighted by traffic: a mediocre high-traffic route outranks a terrible page nobody opens.
 - Auto-capture needs `BrowserTracing`. Chrome, Firefox, Safari, Opera, and Edge only for Performance Score.
 
-Optional on the integration (defaults are already on in current SDKs): `enableInp: true`, `enableLongTask: true`. Do not also set `interactionsSampleRate: 1` on top of a high `tracesSampleRate`.
+INP is collected by default in SDK v11 (`enableInp` is deprecated; opt out with `webVitals: { ignore: ["inp"] }`), and `enableLongTask` defaults to on. Do not also set `interactionsSampleRate: 1` on top of a high `tracesSampleRate`.
 
 Name transactions. Dynamic ids in the path (`/orders/12345`) explode cardinality **and** can be PII. Normalize in `beforeStartSpan` (see the React example) or use the router integration so spans are `/orders/:id`.
 

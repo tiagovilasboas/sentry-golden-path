@@ -5,7 +5,8 @@ Sentry is an error product, not a CRM. GDPR and LGPD both expect **data minimisa
 Official refs:
 
 - [Scrubbing sensitive data (JavaScript)](https://docs.sentry.io/platforms/javascript/data-management/sensitive-data/)
-- [SDK options: `sendDefaultPii` / `dataCollection`](https://docs.sentry.io/platforms/javascript/configuration/options/)
+- [SDK options: `dataCollection`](https://docs.sentry.io/platforms/javascript/configuration/options/)
+- [Migrate from 10.x to 11.x (Data Collection)](https://docs.sentry.io/platforms/javascript/migration/v10-to-v11/)
 
 ## Scrub on the device (`beforeSend*`)
 
@@ -21,29 +22,27 @@ Hooks (JS docs):
 | `beforeSendMetric` | Metrics |
 | `beforeSendTransaction` | Transactions in transaction mode (no effect in span-stream mode) |
 
-This kit’s copy-paste inits implement `beforeSend` for Issues. Add `beforeSendSpan` when you start putting URLs or query strings on spans (`http.query`, raw `/users/1234/details` transaction names). Hash **server-side** and send the hash if you need a correlation id. Never send the raw document “for debugging.”
+This kit’s copy-paste inits implement `beforeSend` for Issues. Add `beforeSendSpan` when you start putting URLs or query strings on spans (`url.query`, raw `/users/1234/details` in custom span names). Hash **server-side** and send the hash if you need a correlation id. Never send the raw document “for debugging.”
 
 Sensitive data also appears in places the error hook does not see:
 
 - **Breadcrumbs.** JS SDKs pick up `console` / previous log lines, and many SDKs attach the HTTP query string to the breadcrumb. **Do not log PII** if those statements become breadcrumbs. Use `beforeBreadcrumb` to drop leftovers, or disable the logging breadcrumb integration.
-- **User context.** Automated IP / identity inference is controlled by `sendDefaultPii` / `dataCollection.userInfo`. Data you set with `Sentry.setUser()` is **always sent**, regardless of `dataCollection`.
+- **User context.** Automated IP / identity inference is controlled by `dataCollection.userInfo` (SDK v11 removed `sendDefaultPii`). Data you set with `Sentry.setUser()` is **always sent**, regardless of `dataCollection`.
 - **HTTP context and spans.** Query strings (`access_token`, `code`, `email`) and raw route ids.
-- **Transaction names.** Parameterize `/users/1234/details` → `/users/:id` (`beforeStartSpan` in the React example).
+- **Span names.** v11 stream mode names pageload / navigation spans by route (or `Pageload`), not the raw URL. Custom names still need `/users/1234/details` → `/users/:id` (`beforeStartSpan` in the React example).
 
-## `sendDefaultPii` is deprecated; `dataCollection` is the control
+## `sendDefaultPii` was removed in v11; `dataCollection` is the control
 
-JS options docs (SDK v10.57+): `sendDefaultPii` is **deprecated** and will be removed in v11. Use `dataCollection`.
+[Official v10 → v11 migration guide](https://docs.sentry.io/platforms/javascript/migration/v10-to-v11/): `sendDefaultPii` was **removed in SDK v11**. Use `dataCollection`. This is a behavior change, not a rename.
 
-Facts from that page, not guesses:
+Facts from that guide, not guesses:
 
-- `sendDefaultPii` default is already `false`.
-- `sendDefaultPii: true` behaves like enabling every `dataCollection` category.
-- If both are set, **`dataCollection` wins**.
-- **Passing `dataCollection` opts you into the more permissive `dataCollection` defaults.** To keep the old `sendDefaultPii: false` behavior you must **opt out of each category explicitly**.
-- Built-in denylist still scrubs keys such as `password`, `authorization`, `token`. That is not enough for checkout, identity, or support chat.
+- In v10 an unset `sendDefaultPii` was restrictive. **In v11 an unset `dataCollection` collects everything by default** (user info, cookies, request/response headers and bodies, gen AI inputs/outputs, database query data).
+- To keep the v10 behavior you must **set the baseline for each category explicitly**: `userInfo: false`, `cookies: false`, `httpHeaders` and `urlQueryParams` with the `["forwarded", "-ip", "remote-", "via", "-user"]` denylist, `httpBodies: []`, `genAI: { inputs: false, outputs: false }`, `databaseQueryData: false`, `graphQL: { document: false, variables: false }`.
+- Built-in scrubbing matches sensitive-looking **key names** (`auth`, `token`, `password`). Best effort only: not enough for checkout, identity, or support chat.
 - `dataCollection` does **not** affect Session Replay. Use Replay privacy options (`maskAllText`, `blockAllMedia`) for that.
 
-This kit therefore sets both: `sendDefaultPii: false` (until v11) **and** explicit opt-outs (`userInfo: false`, `httpBodies: []`). When you copy the official “preserve false” snippet, keep `graphQL`, `genAI.inputs` / `genAI.outputs`, cookies, headers, and query-param denylists off unless a written review says otherwise. Prompts are PII: [ai-llm-monitoring.md](ai-llm-monitoring.md).
+This kit pins that full baseline in both inits (`PII_KEY_DENYLIST` holds the denylist) and `npm test` fails if a category is dropped or `sendDefaultPii` comes back. Turning any category on (cookies, headers, gen AI prompts) needs a written review. Prompts are PII: [ai-llm-monitoring.md](ai-llm-monitoring.md).
 
 Do not `Sentry.setUser({ email, ip_address })` unless you have a documented need. Prefer an opaque `id`.
 
