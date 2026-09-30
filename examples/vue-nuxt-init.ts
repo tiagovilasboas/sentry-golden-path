@@ -11,7 +11,8 @@
  * is instrumented. Replay: session 0, on-error 1.
  *
  * PII: beforeSend scrubs on-device. Do not log PII into breadcrumbs.
- * sendDefaultPii is deprecated; dataCollection must opt out explicitly.
+ * SDK v11 removed sendDefaultPii; an unset dataCollection collects everything,
+ * so every category is pinned to the v10 baseline below.
  *
  * Official API: https://docs.sentry.io/platforms/javascript/guides/vue/
  */
@@ -25,6 +26,12 @@ export const ERROR_SAMPLE_RATE = 0.1;
 export const TRACES_SAMPLE_RATE = 0.05;
 export const REPLAY_SESSION_SAMPLE_RATE = 0;
 export const REPLAY_ON_ERROR_SAMPLE_RATE = 1;
+
+/**
+ * v10 `sendDefaultPii: false` denylist for header / query keys (SDK v11 migration guide).
+ * The SDK still scrubs keys like `token` or `password` on top of this.
+ */
+export const PII_KEY_DENYLIST = ["forwarded", "-ip", "remote-", "via", "-user"];
 
 export const PLACEHOLDER_DSN = "https://oXXXX.ingest.sentry.io/...";
 
@@ -189,12 +196,21 @@ export function initSentry(options: VueSentryInitOptions): boolean {
     dsn: config.dsn,
     environment: config.environment,
     release: config.release,
-    // sendDefaultPii is deprecated (removed in SDK v11). Keep false until then.
-    // Passing dataCollection opts you into permissive defaults: opt out explicitly.
-    sendDefaultPii: false,
+    // SDK v11 removed sendDefaultPii, and every dataCollection category left unset
+    // now collects by default. Pin the v10 baseline explicitly, per the official
+    // guide: https://docs.sentry.io/platforms/javascript/migration/v10-to-v11/
     dataCollection: {
       userInfo: false,
+      cookies: false,
+      httpHeaders: {
+        request: { deny: PII_KEY_DENYLIST },
+        response: { deny: PII_KEY_DENYLIST },
+      },
       httpBodies: [],
+      urlQueryParams: { deny: PII_KEY_DENYLIST },
+      genAI: { inputs: false, outputs: false },
+      databaseQueryData: false,
+      graphQL: { document: false, variables: false },
     },
     sampleRate: ERROR_SAMPLE_RATE,
     // Static 0.05 for day one. When the API samples too, switch to tracesSampler

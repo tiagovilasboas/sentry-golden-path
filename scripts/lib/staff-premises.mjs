@@ -282,8 +282,8 @@ export function collectPiiDocErrors(source) {
   if (!/sendDefaultPii/.test(source)) {
     errors.push("docs/pii-and-filters.md must document sendDefaultPii.");
   }
-  if (!/dataCollection/.test(source) || !/deprecated/.test(source)) {
-    errors.push("docs/pii-and-filters.md must teach sendDefaultPii deprecated → dataCollection.");
+  if (!/dataCollection/.test(source) || !/removed in (?:SDK )?v11/.test(source)) {
+    errors.push("docs/pii-and-filters.md must teach sendDefaultPii removed in v11 → dataCollection.");
   }
   if (!/beforeSendSpan/.test(source)) {
     errors.push("docs/pii-and-filters.md must document beforeSend* hooks (beforeSendSpan).");
@@ -392,7 +392,6 @@ export function collectInitExampleErrors(rel, source) {
     [/export function maskPii\b/, "maskPii helper missing"],
     [/export function captureDomainError\b/, "domain tag helper captureDomainError missing"],
     [/export function shouldDropDuplicate\b/, "short-window dedup helper missing"],
-    [/sendDefaultPii:\s*false/, "sendDefaultPii must be false"],
     [/Sentry\.init\([\s\S]*\bbeforeSend\b/, "Sentry.init must wire beforeSend"],
     [/import\.meta\.env\.PROD/, "production-only init gate missing"],
     [/browserTracingIntegration/, "browserTracingIntegration missing (Web Vitals)"],
@@ -407,12 +406,24 @@ export function collectInitExampleErrors(rel, source) {
     [/withScope/, "withScope capture missing"],
     [/dataCollection\s*:/, "dataCollection PII defaults missing"],
     [/userInfo:\s*false/, "dataCollection.userInfo must be false"],
+    // SDK v11: an unset category collects by default, so each one is pinned.
+    [/cookies:\s*false/, "dataCollection.cookies must be false"],
+    [/httpHeaders:\s*\{\s*request:\s*(?:false|\{\s*(?:deny|allow)\b)[\s\S]*?response:\s*(?:false|\{\s*(?:deny|allow)\b)/, "dataCollection.httpHeaders must filter request and response"],
+    [/httpBodies:\s*\[\s*\]/, "dataCollection.httpBodies must be []"],
+    [/urlQueryParams:\s*(?:false|\{\s*(?:deny|allow)\b)/, "dataCollection.urlQueryParams must be false or filtered"],
+    [/genAI:\s*\{\s*inputs:\s*false,\s*outputs:\s*false\s*\}/, "dataCollection.genAI inputs/outputs must be false"],
+    [/databaseQueryData:\s*false/, "dataCollection.databaseQueryData must be false"],
+    [/graphQL:\s*\{\s*document:\s*false,\s*variables:\s*false\s*\}/, "dataCollection.graphQL must be false"],
   ];
 
   for (const [pattern, message] of required) {
     if (!pattern.test(source)) {
       errors.push(`${rel}: ${message}.`);
     }
+  }
+
+  if (/\bsendDefaultPii\s*:/.test(stripComments(source))) {
+    errors.push(`${rel}: sendDefaultPii was removed in SDK v11; use dataCollection.`);
   }
 
   if (/\bprofiles?(?:Session)?SampleRate\s*[:=]\s*[1-9]/.test(stripComments(source))) {
