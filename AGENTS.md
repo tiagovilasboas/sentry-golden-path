@@ -17,6 +17,7 @@ examples/agent-span.example.ts  manual agent/LLM spans (no prompt capture)
 scripts/check.mjs             Staff premises: rates, PII, domain tags (`npm test`)
 scripts/fixtures/             anti-fixtures; sampling-over-cap.ts is expected FAIL
 llms.txt                      RAG pointer for coding agents
+docs/roadmap.md                open maintenance work (not a feature promise)
 adapters/cursor/              optional Cursor rule; AGENTS.md stays SoT
 ```
 
